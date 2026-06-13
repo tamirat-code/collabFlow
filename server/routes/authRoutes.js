@@ -16,7 +16,7 @@ router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-// ← Fixed callback pattern
+
 router.get('/google/callback',
   (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user) => {
@@ -24,8 +24,8 @@ router.get('/google/callback',
         return res.redirect(`${process.env.CLIENT_URL}/login?error=google_failed`);
       }
 
-      const accessToken  = generateAccessToken(user._id);
-      const refreshToken = generateRefreshToken(user._id);
+      const accessToken  = generateAccessToken(user._id,user.role);
+      const refreshToken = generateRefreshToken(user._id,user.role);
       setRefreshTokenCookie(res, refreshToken);
 
       res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${accessToken}`);
