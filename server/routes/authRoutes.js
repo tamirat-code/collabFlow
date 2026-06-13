@@ -1,6 +1,8 @@
 import express from 'express';
+import passport from 'passport';
 import { register, login, refresh, logout, getMe } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { generateAccessToken, generateRefreshToken, setRefreshTokenCookie } from '../utils/generateToken.js'; // ← was missing
 
 const router = express.Router();
 
@@ -10,20 +12,24 @@ router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
 
-
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
+// ← Fixed callback pattern
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: `${process.env.CLIENT_URL}/login?error=google_failed`, session: false }),
-  (req, res) => {
-    const accessToken  = generateAccessToken(req.user._id);
-    const refreshToken = generateRefreshToken(req.user._id);
-    setRefreshTokenCookie(res, refreshToken);
+  (req, res, next) => {
+    passport.authenticate('google', { session: false }, (err, user) => {
+      if (err || !user) {
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=google_failed`);
+      }
 
-    // Redirect to frontend with access token
-    res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${accessToken}`);
+      const accessToken  = generateAccessToken(user._id);
+      const refreshToken = generateRefreshToken(user._id);
+      setRefreshTokenCookie(res, refreshToken);
+
+      res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${accessToken}`);
+    })(req, res, next);
   }
 );
 

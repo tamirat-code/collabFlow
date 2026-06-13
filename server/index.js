@@ -1,14 +1,18 @@
+
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import passport from './config/passport.js';
+import passport from './config/Passport.js';
 import 'express-async-errors';
 import authRoutes from './routes/authRoutes.js';
 
-dotenv.config();
+
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
