@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   name:     { type: String, required: true, trim: true },
@@ -8,9 +9,10 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String, unique: true, sparse: true },
   avatar:   { type: String, default: '' },
   role:     { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
+  resetPasswordToken:   { type: String },
+  resetPasswordExpires: { type: Date },
 }, { timestamps: true });
 
-// ← No async/await, use promise instead
 userSchema.pre('save', function () {
   if (!this.isModified('password') || !this.password) return;
   return bcrypt.hash(this.password, 12).then((hashed) => {
@@ -20,6 +22,20 @@ userSchema.pre('save', function () {
 
 userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+
+userSchema.methods.generateResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.resetPasswordExpires = Date.now() + 15 * 60 * 1000; 
+
+  return resetToken; 
 };
 
 export default mongoose.model('User', userSchema);

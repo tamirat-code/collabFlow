@@ -1,16 +1,21 @@
 import express from 'express';
 import passport from 'passport';
-import { register, login, refresh, logout, getMe } from '../controllers/authController.js';
+import { register, login, refresh, logout, getMe ,forgotPassword, resetPassword} from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { generateAccessToken, generateRefreshToken, setRefreshTokenCookie } from '../utils/generateToken.js'; // ← was missing
+import { requireRole } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
+
+
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 router.post('/register', register);
 router.post('/login', login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
-router.get('/me', protect, getMe);
+
 
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })

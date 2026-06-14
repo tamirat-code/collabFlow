@@ -11,7 +11,7 @@ import session from 'express-session';
 import passport from './config/Passport.js';
 import 'express-async-errors';
 import authRoutes from './routes/authRoutes.js';
-
+import workspaceRoutes from './routes/workspaceRoutes.js';
 
 const app = express();
 
@@ -19,6 +19,8 @@ app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+
+app.use('/api/workspaces', workspaceRoutes);
 
 app.use('/api/auth', authRoutes);
 
