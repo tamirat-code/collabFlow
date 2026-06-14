@@ -39,6 +39,19 @@ export const useLogin = () => {
   });
 };
 
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: (email) =>
+      fetchClient('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: ({ token, password }) =>
+      fetchClient(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify({ password }) }),
+  });
+};
 
 export const useLogout = () => {
   const logout = useAuthStore((s) => s.logout);

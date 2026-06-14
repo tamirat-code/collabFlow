@@ -19,7 +19,6 @@ const useAuthStore = create(
     }),
     {
       name: 'auth-storage',
-      // Only persist user, NOT accessToken (security)
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

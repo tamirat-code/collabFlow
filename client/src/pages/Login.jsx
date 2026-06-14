@@ -1,15 +1,21 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from '../hooks/useAuth';
+import { loginSchema } from '../lib/validationSchemas';
 
 export default function Login() {
   const navigate = useNavigate();
   const { mutate: login, isPending, error } = useLogin();
-  const [form, setForm] = useState({ email: '', password: '' });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    login(form, { onSuccess: () => navigate('/dashboard') });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(loginSchema) });
+
+  const onSubmit = (data) => {
+    login(data, { onSuccess: () => navigate('/dashboard') });
   };
 
   return (
@@ -24,28 +30,40 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register('email')}
+              className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 ${
+                errors.email ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
+              }`}
               placeholder="you@example.com"
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+            )}
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register('password')}
+              className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 ${
+                errors.password ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
+              }`}
               placeholder="••••••••"
             />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+            )}
           </div>
 
           <button
@@ -63,9 +81,8 @@ export default function Login() {
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        {/* Google Auth Button */}
-        
-         <a href="http://localhost:5000/api/auth/google"
+        <a
+          href="http://localhost:5000/api/auth/google"
           className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
         >
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" />
