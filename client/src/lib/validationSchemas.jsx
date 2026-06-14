@@ -32,3 +32,23 @@ export const resetPasswordSchema = z
     message: "Passwords don't match",
     path: ['confirmPassword'],
   });
+  export const workspaceSchema = z.object({
+  name: z.string().min(2, 'Workspace name must be at least 2 characters').max(50),
+});
+
+export const projectSchema = z.object({
+  name: z.string().min(2, 'Project name must be at least 2 characters').max(50),
+  description: z.string().max(300).optional(),
+});
+
+export const taskSchema = z.object({
+  title: z.string().min(2, 'Task title must be at least 2 characters').max(100),
+  description: z.string().max(500).optional(),
+  priority: z.enum(['low', 'medium', 'high']),
+  dueDate: z.string().optional(),
+});
+
+export const inviteSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
+  role: z.enum(['admin', 'member', 'viewer']),
+});
