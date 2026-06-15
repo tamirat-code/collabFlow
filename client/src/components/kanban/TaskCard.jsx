@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Calendar, Trash2, GripVertical } from 'lucide-react';
 import { useDeleteTask } from '../../hooks/useTasks';
+import { useWorkspaceRole } from '../../hooks/useWorkspaceRole';
 
 const priorityColors = {
   low: 'bg-green-100 text-green-700',
@@ -11,6 +12,7 @@ const priorityColors = {
 
 export default function TaskCard({ task, workspaceId, projectId }) {
   const { mutate: deleteTask } = useDeleteTask(workspaceId, projectId);
+  const { canEdit } = useWorkspaceRole();
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
@@ -33,12 +35,19 @@ export default function TaskCard({ task, workspaceId, projectId }) {
           <GripVertical size={14} />
         </div>
         <p className="flex-1 text-sm font-medium text-gray-800">{task.title}</p>
-        <button
-          onClick={() => deleteTask(task._id)}
-          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition"
-        >
-          <Trash2 size={14} />
-        </button>
+       <div className="flex items-start justify-between gap-2">
+        {canEdit && (
+          <div {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500 mt-0.5">
+            <GripVertical size={14} />
+          </div>
+        )}
+        <p className="flex-1 text-sm font-medium text-gray-800">{task.title}</p>
+        {canEdit && (
+          <button onClick={() => deleteTask(task._id)} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition">
+            <Trash2 size={14} />
+          </button>
+        )}
+      </div>
       </div>
 
       {task.description && (

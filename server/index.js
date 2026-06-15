@@ -12,6 +12,12 @@ import passport from './config/Passport.js';
 import 'express-async-errors';
 import authRoutes from './routes/authRoutes.js';
 import workspaceRoutes from './routes/workspaceRoutes.js';
+import http from 'http';
+import { initSocket } from './socket.js';
+
+
+
+
 
 const app = express();
 
@@ -37,10 +43,13 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
 });
 
+const httpServer = http.createServer(app);
+initSocket(httpServer);
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
-    app.listen(process.env.PORT, () =>
+    httpServer.listen(process.env.PORT, () =>
       console.log(`Server running on port ${process.env.PORT}`)
     );
   })

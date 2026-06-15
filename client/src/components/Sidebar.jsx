@@ -7,8 +7,10 @@ import { useLogout, useMe } from '../hooks/useAuth';
 import useWorkspaceStore from '../store/workspaceStore';
 import CreateWorkspaceModal from './modals/CreateWorkspaceModal';
 import CreateProjectModal from './modals/CreateProjectModal';
+import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 
 export default function Sidebar() {
+  const { canEdit } = useWorkspaceRole();
   const navigate = useNavigate();
   const { data: user } = useMe();
   const { data: workspaces, isLoading: loadingWorkspaces } = useWorkspaces();
@@ -82,15 +84,13 @@ export default function Sidebar() {
     
       <div className="flex-1 overflow-y-auto px-3 py-3">
         <div className="flex items-center justify-between px-2 mb-2">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Projects</span>
-          <button
-            onClick={() => setShowCreateProject(true)}
-            className="text-gray-400 hover:text-white transition"
-            title="New project"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
+  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Projects</span>
+  {canEdit && (
+    <button onClick={() => setShowCreateProject(true)} className="text-gray-400 hover:text-white transition" title="New project">
+      <Plus size={16} />
+    </button>
+  )}
+</div>
 
         {loadingProjects && <p className="text-xs text-gray-500 px-2">Loading...</p>}
 

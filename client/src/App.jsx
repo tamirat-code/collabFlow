@@ -6,10 +6,16 @@ import AuthCallback from './pages/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ToastContainer from './components/ToastContainer';
+
+
+
 
 export default function App() {
   return (
+   
     <BrowserRouter>
+    <ToastContainer />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -25,5 +31,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+   
   );
 }

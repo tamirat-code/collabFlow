@@ -6,6 +6,7 @@ import {
 import KanbanColumn from './KanbanColumn';
 import TaskCard from './TaskCard';
 import { useTasks, useMoveTask } from '../../hooks/useTasks';
+import { useRealtimeTasks } from '../../hooks/useRealtimeTasks';
 
 const STATUSES = ['todo', 'in-progress', 'done'];
 
@@ -14,6 +15,7 @@ export default function KanbanBoard({ workspaceId, projectId }) {
   const { mutate: moveTask } = useMoveTask(workspaceId, projectId);
   const [activeTask, setActiveTask] = useState(null);
 
+       useRealtimeTasks(projectId); 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );

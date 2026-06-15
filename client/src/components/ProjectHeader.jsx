@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Trash2, MoreHorizontal } from 'lucide-react';
 import { useProjects, useDeleteProject } from '../hooks/useProjects';
 import useWorkspaceStore from '../store/workspaceStore';
+import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 
 export default function ProjectHeader({ workspaceId, projectId }) {
   const { data: projects } = useProjects(workspaceId);
   const { mutate: deleteProject } = useDeleteProject(workspaceId);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const [showMenu, setShowMenu] = useState(false);
+const { isAdmin } = useWorkspaceRole();
 
   const project = projects?.find((p) => p._id === projectId);
   if (!project) return null;
@@ -27,7 +29,9 @@ export default function ProjectHeader({ workspaceId, projectId }) {
         )}
       </div>
 
-      <div className="relative">
+{isAdmin && (
+
+     <div className="relative">
         <button
           onClick={() => setShowMenu(!showMenu)}
           className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition"
@@ -45,7 +49,10 @@ export default function ProjectHeader({ workspaceId, projectId }) {
             </button>
           </div>
         )}
-      </div>
+    
+  </div>
+)}
+     
     </div>
   );
 }

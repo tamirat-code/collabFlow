@@ -4,6 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react';
 import TaskCard from './TaskCard';
 import CreateTaskModal from '../modals/CreateTaskModal';
+import { useWorkspaceRole } from '../../hooks/useWorkspaceRole';
 
 const columnConfig = {
   'todo': { label: 'To Do', color: 'bg-gray-400' },
@@ -12,6 +13,7 @@ const columnConfig = {
 };
 
 export default function KanbanColumn({ status, tasks, workspaceId, projectId }) {
+  const { canEdit } = useWorkspaceRole();
   const [showCreateTask, setShowCreateTask] = useState(false);
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const config = columnConfig[status];
@@ -27,12 +29,11 @@ export default function KanbanColumn({ status, tasks, workspaceId, projectId }) 
             {tasks.length}
           </span>
         </div>
-        <button
-          onClick={() => setShowCreateTask(true)}
-          className="text-gray-400 hover:text-gray-600 transition"
-        >
-          <Plus size={16} />
-        </button>
+        {canEdit && (
+  <button onClick={() => setShowCreateTask(true)} className="text-gray-400 hover:text-gray-600 transition">
+    <Plus size={16} />
+  </button>
+)}
       </div>
 
       {/* Droppable Area */}

@@ -23,9 +23,18 @@ export const getMyWorkspaces = async (req, res) => {
     ],
   }).populate('owner', 'name email avatar');
 
-  res.json(workspaces);
-};
+  
+  const result = workspaces.map((ws) => {
+    const isOwner = ws.owner._id.toString() === req.user.id;
+    const member = ws.members.find((m) => m.user.toString() === req.user.id);
+    return {
+      ...ws.toObject(),
+      myRole: isOwner ? 'admin' : member?.role || 'viewer',
+    };
+  });
 
+  res.json(result);
+};
 
 export const getWorkspace = async (req, res) => {
   const workspace = await req.workspace.populate('members.user', 'name email avatar');
