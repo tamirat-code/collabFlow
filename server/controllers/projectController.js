@@ -34,7 +34,7 @@ export const getProject = async (req, res) => {
 };
 
 export const updateProject = async (req, res) => {
-  const project = await Project.findByIdAndUpdate(req.params.projectId, req.body, { new: true });
+  const project = await Project.findByIdAndUpdate(req.params.projectId, req.body, { returnDocument: 'after' });
   if (!project) return res.status(404).json({ message: 'Project not found' });
   res.json(project);
 };

@@ -35,7 +35,7 @@ export const getTasks = async (req, res) => {
 
 // @PUT /api/workspaces/:workspaceId/projects/:projectId/tasks/:taskId
 export const updateTask = async (req, res) => {
-  const task = await Task.findByIdAndUpdate(req.params.taskId, req.body, { new: true })
+  const task = await Task.findByIdAndUpdate(req.params.taskId, req.body, { returnDocument: 'after'})
     .populate('assignee', 'name email avatar');
 
   if (!task) return res.status(404).json({ message: 'Task not found' });
@@ -52,7 +52,7 @@ export const moveTask = async (req, res) => {
   const task = await Task.findByIdAndUpdate(
     req.params.taskId,
     { status, order },
-    { new: true }
+    { returnDocument: 'after' }
   ).populate('assignee', 'name email avatar');
 
   if (!task) return res.status(404).json({ message: 'Task not found' });
