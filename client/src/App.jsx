@@ -1,36 +1,26 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import { AnimatePresence } from 'framer-motion';
+import AuthPage from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AuthCallback from './pages/AuthCallback';
-import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import ToastContainer from './components/ToastContainer';
-
-
-
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   return (
-   
     <BrowserRouter>
-    <ToastContainer />
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/register" element={<AuthPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-         
-         <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-        
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
-
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
-   
   );
 }

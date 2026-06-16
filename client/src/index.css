@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+
+
+input::placeholder {
+  color: #2e7080;
+}
+
+input {
+  font-family: inherit;
+}
