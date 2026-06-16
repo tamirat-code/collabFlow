@@ -7,41 +7,51 @@ import CreateTaskModal from '../modals/CreateTaskModal';
 import { useWorkspaceRole } from '../../hooks/useWorkspaceRole';
 
 const columnConfig = {
-  'todo': { label: 'To Do', color: 'bg-gray-400' },
-  'in-progress': { label: 'In Progress', color: 'bg-blue-500' },
-  'done': { label: 'Done', color: 'bg-green-500' },
+  'todo':        { label: 'To Do',       dot: '#5a8a99' },
+  'in-progress': { label: 'In Progress', dot: '#00c8b4' },
+  'done':        { label: 'Done',        dot: '#22c55e' },
 };
 
 export default function KanbanColumn({ status, tasks, workspaceId, projectId }) {
-  const { canEdit } = useWorkspaceRole();
   const [showCreateTask, setShowCreateTask] = useState(false);
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { canEdit } = useWorkspaceRole();
   const config = columnConfig[status];
 
   return (
-    <div className="flex-1 min-w-[280px] flex flex-col">
-      {/* Column Header */}
-      <div className="flex items-center justify-between px-2 mb-3">
-        <div className="flex items-center gap-2">
-          <span className={`w-2.5 h-2.5 rounded-full ${config.color}`} />
-          <h3 className="text-sm font-semibold text-gray-700">{config.label}</h3>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+    <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column' }}>
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: config.dot, display: 'inline-block' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#a0cdd8' }}>{config.label}</span>
+          <span style={{ fontSize: '12px', color: '#2a6070', background: '#0a2535', padding: '1px 8px', borderRadius: '10px' }}>
             {tasks.length}
           </span>
         </div>
         {canEdit && (
-  <button onClick={() => setShowCreateTask(true)} className="text-gray-400 hover:text-gray-600 transition">
-    <Plus size={16} />
-  </button>
-)}
+          <button
+            onClick={() => setShowCreateTask(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#00c8b4'}
+            onMouseLeave={e => e.currentTarget.style.color = '#3a7080'}
+          >
+            <Plus size={16} />
+          </button>
+        )}
       </div>
 
-      {/* Droppable Area */}
+      {/* droppable area */}
       <div
         ref={setNodeRef}
-        className={`flex-1 rounded-xl p-2 space-y-2 min-h-[200px] transition ${
-          isOver ? 'bg-blue-50 ring-2 ring-blue-200' : 'bg-gray-50'
-        }`}
+        style={{
+          flex: 1, borderRadius: '12px',
+          padding: '8px', minHeight: '200px',
+          background: isOver ? '#0a2535' : '#071520',
+          border: isOver ? '1px solid #00c8b440' : '1px solid #0e3347',
+          transition: 'background 0.15s, border 0.15s',
+          display: 'flex', flexDirection: 'column', gap: '8px',
+        }}
       >
         <SortableContext items={tasks.map((t) => t._id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
@@ -50,7 +60,7 @@ export default function KanbanColumn({ status, tasks, workspaceId, projectId }) 
         </SortableContext>
 
         {tasks.length === 0 && (
-          <div className="flex items-center justify-center h-24 text-xs text-gray-400">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '12px', color: '#1e4a5a' }}>
             Drop tasks here
           </div>
         )}

@@ -3,6 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useCreateTask } from '../../hooks/useTasks';
 import { taskSchema } from '../../lib/validationSchemas';
+import M from '../../styles/ModalStyles';
+
 
 export default function CreateTaskModal({ workspaceId, projectId, defaultStatus = 'todo', onClose }) {
   const { mutate, isPending, error } = useCreateTask(workspaceId, projectId);
@@ -17,70 +19,57 @@ export default function CreateTaskModal({ workspaceId, projectId, defaultStatus 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">New Task</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X size={20} />
-          </button>
+    <div style={M.overlay}>
+      <div style={M.card}>
+        <div style={M.header}>
+          <span style={M.title}>New Task</span>
+          <button style={M.closeBtn} onClick={onClose}><X size={18} /></button>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg mb-3">{error.message}</div>
-        )}
+        {error && <div style={M.errBox}>{error.message}</div>}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={M.label}>Title</label>
             <input
               {...register('title')}
               autoFocus
-              className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-                errors.title ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
-              }`}
               placeholder="e.g. Design login page"
+              style={{ ...M.input, ...(errors.title ? { borderColor: '#f87171' } : {}) }}
             />
-            {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
+            {errors.title && <p style={M.error}>{errors.title.message}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={M.label}>Description</label>
             <textarea
               {...register('description')}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder="Add details..."
+              style={{ ...M.input, resize: 'none' }}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '0.5rem' }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-              <select
-                {...register('priority')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+              <label style={M.label}>Priority</label>
+              <select {...register('priority')} style={M.input}>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Due date</label>
+              <label style={M.label}>Due date</label>
               <input
                 type="date"
                 {...register('dueDate')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={M.input}
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition disabled:opacity-50"
-          >
+          <button type="submit" disabled={isPending} style={{ ...M.btn, opacity: isPending ? 0.6 : 1 }}>
             {isPending ? 'Creating...' : 'Create Task'}
           </button>
         </form>

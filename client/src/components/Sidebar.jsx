@@ -1,29 +1,52 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutGrid, Plus, ChevronDown, LogOut, FolderKanban, X } from 'lucide-react';
-import { useWorkspaces, useCreateWorkspace } from '../hooks/useWorkspaces';
+import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus } from 'lucide-react';
+import { useWorkspaces, useCreateWorkspace, useInviteMember } from '../hooks/useWorkspaces';
 import { useProjects, useCreateProject } from '../hooks/useProjects';
 import { useLogout, useMe } from '../hooks/useAuth';
 import useWorkspaceStore from '../store/workspaceStore';
+import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 import CreateWorkspaceModal from './modals/CreateWorkspaceModal';
 import CreateProjectModal from './modals/CreateProjectModal';
-import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 import InviteMemberModal from './modals/InviteMemberModal';
-import { UserPlus } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose }) {
-  const [showInvite, setShowInvite] = useState(false);
-  const { canEdit } = useWorkspaceRole();
+const S = {
+  sidebar:    { background: '#051e2e', borderRight: '1px solid #0e3347', height: '100vh', width: '256px', display: 'flex', flexDirection: 'column', flexShrink: 0 },
+  logo:       { padding: '1.25rem 1.25rem', borderBottom: '1px solid #0e3347' },
+  logoText:   { fontSize: '20px', fontWeight: 700, color: '#00c8b4', letterSpacing: '0.5px' },
+  wsSection:  { padding: '0.75rem', borderBottom: '1px solid #0e3347', position: 'relative' },
+  wsBtn:      { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: '8px', background: '#0a2535', border: '1px solid #0e3347', color: '#a0cdd8', fontSize: '13px', cursor: 'pointer' },
+  dropdown:   { position: 'absolute', left: '0.75rem', right: '0.75rem', top: '100%', marginTop: '4px', background: '#051e2e', border: '1px solid #0e3347', borderRadius: '8px', zIndex: 20, overflow: 'hidden' },
+  dropItem:   { width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: '13px', color: '#a0cdd8', background: 'none', border: 'none', cursor: 'pointer', display: 'block' },
+  dropItemActive: { background: '#0a2535', color: '#00c8b4' },
+  dropNew:    { width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: '13px', color: '#00c8b4', background: 'none', border: 'none', borderTop: '1px solid #0e3347', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
+  projSection:{ flex: 1, overflowY: 'auto', padding: '0.75rem' },
+  projHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: '8px' },
+  projLabel:  { fontSize: '11px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em' },
+  projBtn:    { padding: '8px 10px', borderRadius: '8px', fontSize: '13px', color: '#5a8a99', background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' },
+  projBtnActive: { background: '#0a3347', color: '#00c8b4', borderLeft: '2px solid #00c8b4', paddingLeft: '8px' },
+  footer:     { padding: '0.75rem', borderTop: '1px solid #0e3347' },
+  userRow:    { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px' },
+  avatar:     { width: '32px', height: '32px', borderRadius: '50%', background: '#0a3347', border: '1px solid #00c8b4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 600, color: '#00c8b4', flexShrink: 0 },
+  userName:   { fontSize: '13px', fontWeight: 500, color: '#e0f5f2', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  userRole:   { fontSize: '11px', color: '#3a7080' },
+  iconBtn:    { background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080', display: 'flex', alignItems: 'center', padding: '4px' },
+  inviteBtn:  { width: '100%', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', fontSize: '12px', color: '#3a7080', background: 'none', border: 'none', cursor: 'pointer', marginTop: '4px' },
+};
+
+export default function Sidebar() {
   const navigate = useNavigate();
   const { data: user } = useMe();
-  const { data: workspaces, isLoading: loadingWorkspaces } = useWorkspaces();
+  const { data: workspaces, isLoading: loadingWs } = useWorkspaces();
   const { activeWorkspaceId, activeProjectId, setActiveWorkspace, setActiveProject } = useWorkspaceStore();
   const { data: projects, isLoading: loadingProjects } = useProjects(activeWorkspaceId);
   const { mutate: logout } = useLogout();
+  const { canEdit } = useWorkspaceRole();
 
-  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false);
-  const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
-  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [showWsDropdown, setShowWsDropdown] = useState(false);
+  const [showCreateWs, setShowCreateWs] = useState(false);
+  const [showCreateProj, setShowCreateProj] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   if (!activeWorkspaceId && workspaces?.length > 0) {
     setActiveWorkspace(workspaces[0]._id);
@@ -35,156 +58,115 @@ export default function Sidebar({ isOpen, onClose }) {
     logout(undefined, { onSuccess: () => navigate('/login') });
   };
 
-  const handleProjectSelect = (projectId) => {
-    setActiveProject(projectId);
-    onClose?.(); // close drawer on mobile after selecting a project
-  };
-
   return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-20 md:hidden"
-          onClick={onClose}
-        />
-      )}
+    <aside style={S.sidebar}>
+      {/* Logo */}
+      <div style={S.logo}>
+        <span style={S.logoText}>CollabFlow</span>
+      </div>
 
-      <aside
-        className={`
-          fixed md:static inset-y-0 left-0 z-30
-          w-64 h-screen bg-gray-900 text-gray-200 flex flex-col
-          transform transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0
-        `}
-      >
-        {/* Header */}
-        <div className="px-5 py-5 border-b border-gray-800 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white">CollabFlow</h1>
-          <button
-            onClick={onClose}
-            className="md:hidden text-gray-400 hover:text-white transition"
-          >
-            <X size={20} />
-          </button>
-        </div>
+      {/* Workspace switcher */}
+      <div style={S.wsSection}>
+        <button style={S.wsBtn} onClick={() => setShowWsDropdown(!showWsDropdown)}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {loadingWs ? 'Loading...' : activeWorkspace?.name || 'Select workspace'}
+          </span>
+          <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: '6px' }} />
+        </button>
 
-        {/* Workspace selector */}
-        <div className="px-3 py-3 border-b border-gray-800 relative">
-          <button
-            onClick={() => setShowWorkspaceDropdown(!showWorkspaceDropdown)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition text-sm"
-          >
-            <span className="font-medium truncate">
-              {loadingWorkspaces ? 'Loading...' : activeWorkspace?.name || 'Select workspace'}
-            </span>
-            <ChevronDown size={16} />
-          </button>
-
-          {showWorkspaceDropdown && (
-            <div className="absolute left-3 right-3 mt-1 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-10 overflow-hidden">
-              {workspaces?.map((ws) => (
-                <button
-                  key={ws._id}
-                  onClick={() => {
-                    setActiveWorkspace(ws._id);
-                    setShowWorkspaceDropdown(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 transition ${
-                    ws._id === activeWorkspaceId ? 'bg-gray-700 text-white' : ''
-                  }`}
-                >
-                  {ws.name}
-                </button>
-              ))}
+        {showWsDropdown && (
+          <div style={S.dropdown}>
+            {workspaces?.map((ws) => (
               <button
-                onClick={() => {
-                  setShowCreateWorkspace(true);
-                  setShowWorkspaceDropdown(false);
-                }}
-                className="w-full text-left px-3 py-2 text-sm text-blue-400 hover:bg-gray-700 transition flex items-center gap-2 border-t border-gray-700"
+                key={ws._id}
+                style={{ ...S.dropItem, ...(ws._id === activeWorkspaceId ? S.dropItemActive : {}) }}
+                onClick={() => { setActiveWorkspace(ws._id); setShowWsDropdown(false); }}
               >
-                <Plus size={14} /> New workspace
-              </button>
-            </div>
-          )}
-        </div>
-{activeWorkspaceId && canEdit && (
-  <button
-    onClick={() => setShowInvite(true)}
-    className="w-full flex items-center gap-2 px-3 py-2 mt-2 text-xs text-gray-400 hover:text-white transition"
-  >
-    <UserPlus size={14} /> Invite member
-  </button>
-)}
-        {/* Projects list */}
-        <div className="flex-1 overflow-y-auto px-3 py-3">
-          <div className="flex items-center justify-between px-2 mb-2">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Projects</span>
-            {canEdit && (
-              <button
-                onClick={() => setShowCreateProject(true)}
-                className="text-gray-400 hover:text-white transition"
-                title="New project"
-              >
-                <Plus size={16} />
-              </button>
-            )}
-          </div>
-
-          {loadingProjects && <p className="text-xs text-gray-500 px-2">Loading...</p>}
-          {projects?.length === 0 && !loadingProjects && (
-            <p className="text-xs text-gray-500 px-2">No projects yet</p>
-          )}
-
-          <div className="space-y-1">
-            {projects?.map((project) => (
-              <button
-                key={project._id}
-                onClick={() => handleProjectSelect(project._id)}
-                className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm transition ${
-                  project._id === activeProjectId
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800'
-                }`}
-              >
-                <FolderKanban size={16} />
-                <span className="truncate">{project.name}</span>
+                {ws.name}
               </button>
             ))}
-          </div>
-        </div>
-
-        {/* User footer */}
-        <div className="px-3 py-3 border-t border-gray-800">
-          <div className="flex items-center gap-2 px-2 py-2">
-            {user?.avatar ? (
-              <img src={user.avatar} className="w-8 h-8 rounded-full" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold text-white">
-                {user?.name?.[0]}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
-            </div>
-            <button onClick={handleLogout} title="Logout" className="text-gray-400 hover:text-red-400 transition">
-              <LogOut size={16} />
+            <button
+              style={S.dropNew}
+              onClick={() => { setShowCreateWs(true); setShowWsDropdown(false); }}
+            >
+              <Plus size={13} /> New workspace
             </button>
           </div>
+        )}
+
+        {canEdit && activeWorkspaceId && (
+          <button style={S.inviteBtn} onClick={() => setShowInvite(true)}>
+            <UserPlus size={13} /> Invite member
+          </button>
+        )}
+      </div>
+
+      {/* Projects */}
+      <div style={S.projSection}>
+        <div style={S.projHeader}>
+          <span style={S.projLabel}>Projects</span>
+          {canEdit && (
+            <button
+              onClick={() => setShowCreateProj(true)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080', display: 'flex' }}
+            >
+              <Plus size={15} />
+            </button>
+          )}
         </div>
-{showInvite && (
-  <InviteMemberModal workspaceId={activeWorkspaceId} onClose={() => setShowInvite(false)} />
-)}
-        {showCreateWorkspace && (
-          <CreateWorkspaceModal onClose={() => setShowCreateWorkspace(false)} />
+
+        {loadingProjects && (
+          <p style={{ fontSize: '12px', color: '#2a6070', padding: '0 8px' }}>Loading...</p>
         )}
-        {showCreateProject && activeWorkspaceId && (
-          <CreateProjectModal workspaceId={activeWorkspaceId} onClose={() => setShowCreateProject(false)} />
+
+        {!loadingProjects && projects?.length === 0 && (
+          <p style={{ fontSize: '12px', color: '#2a6070', padding: '0 8px' }}>No projects yet</p>
         )}
-      </aside>
-    </>
+
+        {projects?.map((project) => (
+          <button
+            key={project._id}
+            onClick={() => setActiveProject(project._id)}
+            style={{
+              ...S.projBtn,
+              ...(project._id === activeProjectId ? S.projBtnActive : {}),
+            }}
+            onMouseEnter={e => { if (project._id !== activeProjectId) e.currentTarget.style.background = '#071a27'; }}
+            onMouseLeave={e => { if (project._id !== activeProjectId) e.currentTarget.style.background = 'none'; }}
+          >
+            <LayoutGrid size={14} style={{ flexShrink: 0, color: project._id === activeProjectId ? '#00c8b4' : '#2a6070' }} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {project.name}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* User footer */}
+      <div style={S.footer}>
+        <div style={S.userRow}>
+          {user?.avatar ? (
+            <img src={user.avatar} style={{ ...S.avatar, objectFit: 'cover' }} alt="" />
+          ) : (
+            <div style={S.avatar}>{user?.name?.[0]?.toUpperCase()}</div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={S.userName}>{user?.name}</p>
+            <p style={S.userRole}>{user?.role}</p>
+          </div>
+          <button style={S.iconBtn} onClick={handleLogout} title="Logout">
+            <LogOut size={15} />
+          </button>
+        </div>
+      </div>
+
+      {showCreateWs && <CreateWorkspaceModal onClose={() => setShowCreateWs(false)} />}
+      {showCreateProj && activeWorkspaceId && (
+        <CreateProjectModal workspaceId={activeWorkspaceId} onClose={() => setShowCreateProj(false)} />
+      )}
+      {showInvite && activeWorkspaceId && (
+        <InviteMemberModal workspaceId={activeWorkspaceId} onClose={() => setShowInvite(false)} />
+      )}
+    </aside>
   );
 }

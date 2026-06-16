@@ -1,10 +1,8 @@
-
 import dotenv from "dotenv";
 dotenv.config();
 
 import express from 'express';
 import mongoose from 'mongoose';
-
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -15,20 +13,12 @@ import workspaceRoutes from './routes/workspaceRoutes.js';
 import http from 'http';
 import { initSocket } from './socket.js';
 
-
-
-
-
 const app = express();
+
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-
-
-app.use('/api/workspaces', workspaceRoutes);
-
-app.use('/api/auth', authRoutes);
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -37,6 +27,12 @@ app.use(session({
 }));
 
 app.use(passport.initialize());
+app.use(passport.session());
+
+
+app.use('/api/auth', authRoutes);
+app.use('/api/workspaces', workspaceRoutes);
+
 
 app.use((err, req, res, next) => {
   console.error(err.message);

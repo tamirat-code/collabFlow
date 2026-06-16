@@ -5,9 +5,9 @@ import { useDeleteTask } from '../../hooks/useTasks';
 import { useWorkspaceRole } from '../../hooks/useWorkspaceRole';
 
 const priorityColors = {
-  low: 'bg-green-100 text-green-700',
-  medium: 'bg-yellow-100 text-yellow-700',
-  high: 'bg-red-100 text-red-700',
+  low:    { background: '#052e1a', color: '#22c55e', border: '1px solid #14532d' },
+  medium: { background: '#2d1f05', color: '#f59e0b', border: '1px solid #78350f' },
+  high:   { background: '#2d0a0a', color: '#f87171', border: '1px solid #7f1d1d' },
 };
 
 export default function TaskCard({ task, workspaceId, projectId }) {
@@ -16,58 +16,81 @@ export default function TaskCard({ task, workspaceId, projectId }) {
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
+    disabled: !canEdit,
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md transition group"
+      style={{
+        ...style,
+        background: '#0a1e2e',
+        border: '1px solid #0e3347',
+        borderRadius: '10px',
+        padding: '10px 12px',
+        cursor: 'default',
+        position: 'relative',
+      }}
+      className="group"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500 mt-0.5">
-          <GripVertical size={14} />
-        </div>
-        <p className="flex-1 text-sm font-medium text-gray-800">{task.title}</p>
-       <div className="flex items-start justify-between gap-2">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
         {canEdit && (
-          <div {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500 mt-0.5">
+          <div
+            {...attributes}
+            {...listeners}
+            style={{ cursor: 'grab', color: '#1e4a5a', marginTop: '2px', flexShrink: 0 }}
+            onMouseEnter={e => e.currentTarget.style.color = '#3a7080'}
+            onMouseLeave={e => e.currentTarget.style.color = '#1e4a5a'}
+          >
             <GripVertical size={14} />
           </div>
         )}
-        <p className="flex-1 text-sm font-medium text-gray-800">{task.title}</p>
+
+        <p style={{ flex: 1, fontSize: '13px', fontWeight: 500, color: '#c0e8e4', lineHeight: 1.4 }}>
+          {task.title}
+        </p>
+
         {canEdit && (
-          <button onClick={() => deleteTask(task._id)} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition">
-            <Trash2 size={14} />
+          <button
+            onClick={() => deleteTask(task._id)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1e4a5a', padding: '2px', opacity: 0, transition: 'opacity 0.15s', flexShrink: 0 }}
+            className="group-hover:opacity-100"
+            onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
+            onMouseLeave={e => e.currentTarget.style.color = '#1e4a5a'}
+          >
+            <Trash2 size={13} />
           </button>
         )}
       </div>
-      </div>
 
       {task.description && (
-        <p className="text-xs text-gray-500 mt-1 ml-5 line-clamp-2">{task.description}</p>
+        <p style={{ fontSize: '12px', color: '#3a7080', marginTop: '6px', marginLeft: canEdit ? '22px' : '0', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {task.description}
+        </p>
       )}
 
-      <div className="flex items-center gap-2 mt-2 ml-5">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${priorityColors[task.priority]}`}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', marginLeft: canEdit ? '22px' : '0' }}>
+        <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 8px', borderRadius: '10px', textTransform: 'capitalize', ...priorityColors[task.priority] }}>
           {task.priority}
         </span>
+
         {task.dueDate && (
-          <span className="flex items-center gap-1 text-xs text-gray-400">
-            <Calendar size={12} />
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#3a7080' }}>
+            <Calendar size={11} />
             {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </span>
         )}
+
         {task.assignee && (
-          <span className="ml-auto w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-semibold">
-            {task.assignee.name?.[0]}
-          </span>
+          <div style={{ marginLeft: 'auto', width: '20px', height: '20px', borderRadius: '50%', background: '#0a3347', border: '1px solid #00c8b4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 600, color: '#00c8b4' }}>
+            {task.assignee.name?.[0]?.toUpperCase()}
+          </div>
         )}
       </div>
     </div>
