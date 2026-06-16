@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus } from 'lucide-react';
+import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus ,Zap} from 'lucide-react';
 import { useWorkspaces, useCreateWorkspace, useInviteMember } from '../hooks/useWorkspaces';
 import { useProjects, useCreateProject } from '../hooks/useProjects';
 import { useLogout, useMe } from '../hooks/useAuth';
@@ -60,7 +60,7 @@ export default function Sidebar() {
 
   return (
     <aside style={S.sidebar}>
-      {/* Logo */}
+   
       <div style={S.logo}>
         <span style={S.logoText}>CollabFlow</span>
       </div>
@@ -101,7 +101,6 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Projects */}
       <div style={S.projSection}>
         <div style={S.projHeader}>
           <span style={S.projLabel}>Projects</span>
@@ -142,7 +141,17 @@ export default function Sidebar() {
         ))}
       </div>
 
-      {/* User footer */}
+   <div className="px-3 pb-2">
+          <button
+            onClick={() => navigate("/billing")}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition"
+            style={{ background: "rgba(0,200,180,0.08)", border: "1px solid rgba(0,200,180,0.25)", color: "#00c8b4" }}
+          >
+            <Zap size={13} />
+            Upgrade plan
+          </button>
+        </div>
+
       <div style={S.footer}>
         <div style={S.userRow}>
           {user?.avatar ? (

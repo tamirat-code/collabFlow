@@ -7,6 +7,11 @@ const workspaceSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
   }],
+  plan: {
+  type: String,
+  enum: ['free', 'pro', 'business'],
+  default: 'free',
+},
 }, { timestamps: true });
 
 export default mongoose.model('Workspace', workspaceSchema);

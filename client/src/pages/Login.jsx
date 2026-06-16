@@ -205,11 +205,11 @@ export default function AuthPage() {
 
                 <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
                   <Field
-  registration={registerForm.register('email')}
-  placeholder="email"   // ← fixed
-  type="email"
+  registration={registerForm.register('name')}
+  placeholder="Name"
+  type="text"
   icon="&#128100;"
-  error={loginForm.formState.errors.email?.message}
+  error={registerForm.formState.errors.name?.message}
 />
                   <Field
                     registration={registerForm.register('email')}

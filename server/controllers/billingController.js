@@ -1,0 +1,112 @@
+import Stripe from 'stripe';
+import Workspace from '../models/Workspace.js';
+import { getPlanLimits } from '../utils/planLimits.js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const PRICES = {
+  pro:      process.env.STRIPE_PRICE_PRO,
+  business: process.env.STRIPE_PRICE_BUSINESS,
+};
+
+export const getBillingStatus = async (req, res) => {
+  const workspace = req.workspace;
+  res.json({
+    plan: workspace.plan,
+    stripeCurrentPeriodEnd: workspace.stripeCurrentPeriodEnd,
+    stripeSubscriptionId: workspace.stripeSubscriptionId,
+    limits: getPlanLimits(workspace.plan),
+  });
+};
+
+export const createCheckoutSession = async (req, res) => {
+  const { plan } = req.body;
+  const workspace = req.workspace;
+
+  const priceId = PRICES[plan];
+  if (!priceId) return res.status(400).json({ message: 'Invalid plan' });
+
+  let customerId = workspace.stripeCustomerId;
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: req.user.email,
+      metadata: { workspaceId: workspace._id.toString() },
+    });
+    customerId = customer.id;
+    workspace.stripeCustomerId = customerId;
+    await workspace.save();
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: `${process.env.CLIENT_URL}/billing?success=true`,
+    cancel_url:  `${process.env.CLIENT_URL}/billing`,
+    metadata: { workspaceId: workspace._id.toString(), plan },
+    subscription_data: {
+      metadata: { workspaceId: workspace._id.toString(), plan },
+    },
+  });
+
+  res.json({ url: session.url });
+};
+
+export const createPortalSession = async (req, res) => {
+  const workspace = req.workspace;
+  if (!workspace.stripeCustomerId)
+    return res.status(400).json({ message: 'No billing account found' });
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: workspace.stripeCustomerId,
+    return_url: `${process.env.CLIENT_URL}/billing`,
+  });
+
+  res.json({ url: session.url });
+};
+
+export const handleWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).json({ message: `Webhook error: ${err.message}` });
+  }
+
+  const obj = event.data.object;
+
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const sub = await stripe.subscriptions.retrieve(obj.subscription);
+      await Workspace.findByIdAndUpdate(obj.metadata.workspaceId, {
+        plan: obj.metadata.plan,
+        stripeSubscriptionId: sub.id,
+        stripePriceId: sub.items.data[0].price.id,
+        stripeCurrentPeriodEnd: new Date(sub.current_period_end * 1000),
+      }, { returnDocument: 'after' });
+      break;
+    }
+    case 'invoice.paid': {
+      const sub = await stripe.subscriptions.retrieve(obj.subscription);
+      await Workspace.findOneAndUpdate(
+        { stripeSubscriptionId: sub.id },
+        { stripeCurrentPeriodEnd: new Date(sub.current_period_end * 1000) },
+        { returnDocument: 'after' }
+      );
+      break;
+    }
+    case 'customer.subscription.deleted': {
+      await Workspace.findOneAndUpdate(
+        { stripeSubscriptionId: obj.id },
+        { plan: 'free', stripeSubscriptionId: null, stripePriceId: null, stripeCurrentPeriodEnd: null },
+        { returnDocument: 'after' }
+      );
+      break;
+    }
+  }
+
+  res.json({ received: true });
+};
