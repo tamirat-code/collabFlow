@@ -21,6 +21,7 @@ userSchema.pre('save', function () {
 });
 
 userSchema.methods.comparePassword = function (candidatePassword) {
+  if (!this.password) return Promise.resolve(false);
   return bcrypt.compare(candidatePassword, this.password);
 };
 

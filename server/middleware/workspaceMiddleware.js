@@ -1,13 +1,15 @@
 import Workspace from '../models/Workspace.js';
-
 export const checkWorkspaceAccess = async (req, res, next) => {
   const { workspaceId } = req.params;
 
   const workspace = await Workspace.findById(workspaceId);
   if (!workspace) return res.status(404).json({ message: 'Workspace not found' });
 
-  const isOwner = workspace.owner.toString() === req.user.id;
-  const member = workspace.members.find(m => m.user.toString() === req.user.id);
+  const isOwner = workspace.owner.toString() === req.user.id.toString(); // ← both toString()
+
+  const member = workspace.members.find(
+    (m) => m.user.toString() === req.user.id.toString() // ← both toString()
+  );
 
   if (!isOwner && !member) {
     return res.status(403).json({ message: 'Access denied to this workspace' });

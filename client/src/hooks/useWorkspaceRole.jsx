@@ -1,18 +1,28 @@
 import { useWorkspaces } from './useWorkspaces';
+import { useMe } from './useAuth';
 import useWorkspaceStore from '../store/workspaceStore';
 
 export const useWorkspaceRole = () => {
   const { data: workspaces } = useWorkspaces();
+  const { data: user } = useMe();
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
 
   const activeWorkspace = workspaces?.find((w) => w._id === activeWorkspaceId);
-  const role = activeWorkspace?.myRole || 'viewer';
+
+
+  const isOwner =
+    activeWorkspace?.owner?._id === user?._id ||
+    activeWorkspace?.owner?._id?.toString() === user?._id?.toString() ||
+    activeWorkspace?.owner === user?._id ||
+    activeWorkspace?.owner?.toString() === user?._id?.toString();
+
+  const role = isOwner ? 'admin' : (activeWorkspace?.myRole || 'viewer');
 
   return {
     role,
-    isAdmin: role === 'admin',
+    isAdmin:  role === 'admin',
     isMember: role === 'member',
     isViewer: role === 'viewer',
-    canEdit: role === 'admin' || role === 'member',
+    canEdit:  role === 'admin' || role === 'member',
   };
 };

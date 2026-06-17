@@ -2,9 +2,38 @@ import useAuthStore from '../store/authStore';
 
 const BASE_URL = 'http://localhost:5000/api';
 
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/google'];
+
+const tryRefresh = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const { accessToken } = await res.json();
+      useAuthStore.getState().setAccessToken(accessToken);
+      return accessToken;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
 
 export const fetchClient = async (endpoint, options = {}) => {
-  const accessToken = useAuthStore.getState().accessToken;
+  let accessToken = useAuthStore.getState().accessToken;
+  const isAuthEndpoint = AUTH_ENDPOINTS.some((e) => endpoint.startsWith(e));
+
+  
+  if (!accessToken && !options._retry && !isAuthEndpoint) {
+    accessToken = await tryRefresh();
+    if (!accessToken) {
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+      return;
+    }
+  }
 
   const headers = {
     'Content-Type': 'application/json',
@@ -15,33 +44,26 @@ export const fetchClient = async (endpoint, options = {}) => {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers,
-    credentials: 'include', // send cookies for refresh token
+    credentials: 'include',
   });
 
-
-  if (res.status === 401 && !options._retry) {
-    const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (refreshRes.ok) {
-      const { accessToken: newToken } = await refreshRes.json();
-      useAuthStore.getState().setAccessToken(newToken);
-
-
-      return fetchClient(endpoint, { ...options, _retry: true, headers: {
-        ...options.headers,
-        Authorization: `Bearer ${newToken}`,
-      }});
-    } else {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
+  
+  if (res.status === 401 && !options._retry && !isAuthEndpoint) {
+    const newToken = await tryRefresh();
+    if (newToken) {
+      return fetchClient(endpoint, {
+        ...options,
+        _retry: true,
+        headers: { ...options.headers, Authorization: `Bearer ${newToken}` },
+      });
     }
+    useAuthStore.getState().logout();
+    window.location.href = '/login';
+    return;
   }
 
   if (!res.ok) {
-    const error = await res.json();
+    const error = await res.json().catch(() => ({ message: 'Something went wrong' }));
     throw new Error(error.message || 'Something went wrong');
   }
 

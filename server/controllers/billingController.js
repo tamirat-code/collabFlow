@@ -55,15 +55,20 @@ export const createCheckoutSession = async (req, res) => {
 
 export const createPortalSession = async (req, res) => {
   const workspace = req.workspace;
+
   if (!workspace.stripeCustomerId)
-    return res.status(400).json({ message: 'No billing account found' });
+    return res.status(400).json({ message: 'No billing account found. Upgrade to a paid plan first.' });
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: workspace.stripeCustomerId,
-    return_url: `${process.env.CLIENT_URL}/billing`,
-  });
-
-  res.json({ url: session.url });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: workspace.stripeCustomerId,
+      return_url: `${process.env.CLIENT_URL}/billing`,
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Stripe portal error:', err.message);
+    res.status(500).json({ message: err.message });
+  }
 };
 
 export const handleWebhook = async (req, res) => {

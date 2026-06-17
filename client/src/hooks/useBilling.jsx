@@ -39,13 +39,15 @@ export const useCreateCheckout = (workspaceId) => {
     },
   });
 };
-
 export const usePortal = (workspaceId) => {
   return useMutation({
     mutationFn: () =>
       fetchClient(`/billing/${workspaceId}/portal`, { method: 'POST' }),
     onSuccess: ({ url }) => {
       window.location.href = url;
+    },
+    onError: (err) => {
+      alert(err.message); 
     },
   });
 };

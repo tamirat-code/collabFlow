@@ -5,12 +5,13 @@ import useAuthStore from '../store/authStore';
 
 export const useMe = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accessToken = useAuthStore((s) => s.accessToken);
 
   return useQuery({
     queryKey: ['me'],
     queryFn: () => fetchClient('/auth/me'),
-    enabled: isAuthenticated,
-    staleTime: 1000 * 60 * 5, 
+    enabled: isAuthenticated && !!accessToken, 
+    staleTime: 1000 * 60 * 5,
   });
 };
 

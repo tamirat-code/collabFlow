@@ -86,6 +86,11 @@ export const login = async (req, res) => {
   if (!user || !(await user.comparePassword(password)))
     return res.status(401).json({ message: 'Invalid credentials' });
 
+    if (!user.password) {
+    return res.status(401).json({ message: 'This account uses Google sign-in. Please continue with Google.' });
+  }
+    const isMatch = await user.comparePassword(password);
+  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
   const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id);
   setRefreshTokenCookie(res, refreshToken);

@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState ,useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLogin, useRegister } from '../hooks/useAuth';
 import { loginSchema, registerSchema } from '../lib/validationSchemas';
-
+import useAuthStore from '../store/authStore';
 export default function AuthPage() {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accessToken = useAuthStore((s) => s.accessToken);
+
+
+  useEffect(() => {
+    if (isAuthenticated && accessToken) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, accessToken]);
+
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [animating, setAnimating] = useState(false);
   const [overlayFull, setOverlayFull] = useState(false);

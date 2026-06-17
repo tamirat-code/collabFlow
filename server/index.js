@@ -16,10 +16,10 @@ import { initSocket } from './socket.js';
 
 const app = express();
 
-// ── Stripe webhook needs raw body — must come BEFORE express.json() ───────────
+
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 
-// ── Middleware ─────────────────────────────────────────────────────────────────
+
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -31,18 +31,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ── Routes ─────────────────────────────────────────────────────────────────────
+
 app.use('/api/auth',       authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/billing',    billingRoutes);
 
-// ── Global error handler ───────────────────────────────────────────────────────
+
 app.use((err, req, res, next) => {
   console.error(err.message);
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
 });
 
-// ── Server ─────────────────────────────────────────────────────────────────────
+
 const httpServer = http.createServer(app);
 initSocket(httpServer);
 

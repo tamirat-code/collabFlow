@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Zap, Building2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { useBillingInfo, useCreateCheckout, usePortal } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
+import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 
 const PLANS = [
   {
@@ -57,6 +58,7 @@ const S = {
 };
 
 export default function Billing() {
+  const { isAdmin } = useWorkspaceRole();
   const navigate = useNavigate();
   const { activeWorkspaceId } = useWorkspaceStore();
   const { data: billing, isLoading } = useBillingInfo(activeWorkspaceId);
@@ -75,7 +77,7 @@ export default function Billing() {
         <h1 style={S.heading}>Plans & billing</h1>
         <p style={S.sub}>Upgrade your workspace to unlock more projects, members, and features.</p>
 
-        {/* Current plan info bar */}
+       
         {!isLoading && (
           <div style={S.infoBox}>
             <span style={S.infoTxt}>
@@ -84,15 +86,15 @@ export default function Billing() {
                 <> &nbsp;·&nbsp; Renews <span style={S.infoVal}>{new Date(billing.stripeCurrentPeriodEnd).toLocaleDateString()}</span></>
               )}
             </span>
-            {currentPlan !== 'free' && (
-              <button style={S.portal} onClick={() => portal()} disabled={portalPending}>
-                {portalPending ? 'Opening...' : <><ExternalLink size={12} /> Manage subscription</>}
-              </button>
-            )}
+            {currentPlan !== 'free' && isAdmin && (
+  <button style={S.portal} onClick={() => portal()} disabled={portalPending}>
+    {portalPending ? 'Opening...' : <><ExternalLink size={12} /> Manage subscription</>}
+  </button>
+)}
           </div>
         )}
 
-        {/* Plan cards */}
+       
         <div style={S.grid}>
           {PLANS.map((plan) => {
             const Icon = plan.icon;

@@ -21,7 +21,7 @@ export const getMyWorkspaces = async (req, res) => {
       { owner: req.user.id },
       { 'members.user': req.user.id },
     ],
-  }).populate('owner', 'name email avatar');
+  }).populate('owner', '_id name email avatar');
 
   
   const result = workspaces.map((ws) => {
