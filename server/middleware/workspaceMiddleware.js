@@ -1,14 +1,21 @@
 import Workspace from '../models/Workspace.js';
+
 export const checkWorkspaceAccess = async (req, res, next) => {
   const { workspaceId } = req.params;
 
-  const workspace = await Workspace.findById(workspaceId);
+  const workspace = await Workspace.findById(workspaceId)
+    .populate('owner', '_id'); // ← populate owner so _id is accessible
+
   if (!workspace) return res.status(404).json({ message: 'Workspace not found' });
 
-  const isOwner = workspace.owner.toString() === req.user.id.toString(); // ← both toString()
+  const ownerId = workspace.owner._id
+    ? workspace.owner._id.toString()
+    : workspace.owner.toString();
+
+  const isOwner = ownerId === req.user.id.toString();
 
   const member = workspace.members.find(
-    (m) => m.user.toString() === req.user.id.toString() // ← both toString()
+    (m) => m.user.toString() === req.user.id.toString()
   );
 
   if (!isOwner && !member) {

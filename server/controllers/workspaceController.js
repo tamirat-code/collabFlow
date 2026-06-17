@@ -1,7 +1,6 @@
 import Workspace from '../models/Workspace.js';
 import User from '../models/User.js';
 
-
 export const createWorkspace = async (req, res) => {
   const { name } = req.body;
 
@@ -11,9 +10,14 @@ export const createWorkspace = async (req, res) => {
     members: [],
   });
 
-  res.status(201).json(workspace);
-};
+ 
+  await workspace.populate('owner', '_id name email avatar');
 
+  res.status(201).json({
+    ...workspace.toObject(),
+    myRole: 'admin', // creator is always admin
+  });
+};
 
 export const getMyWorkspaces = async (req, res) => {
   const workspaces = await Workspace.find({

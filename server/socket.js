@@ -11,7 +11,6 @@ export const initSocket = (httpServer) => {
     },
   });
 
- 
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Unauthorized'));
@@ -26,7 +25,7 @@ export const initSocket = (httpServer) => {
   });
 
   io.on('connection', (socket) => {
-   
+
     socket.on('joinProject', (projectId) => {
       socket.join(`project:${projectId}`);
     });
@@ -35,7 +34,6 @@ export const initSocket = (httpServer) => {
       socket.leave(`project:${projectId}`);
     });
 
-  
     socket.join(`user:${socket.userId}`);
 
     socket.on('disconnect', () => {});

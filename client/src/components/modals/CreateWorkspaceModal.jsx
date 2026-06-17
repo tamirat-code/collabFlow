@@ -5,23 +5,29 @@ import { useCreateWorkspace } from '../../hooks/useWorkspaces';
 import { workspaceSchema } from '../../lib/validationSchemas';
 import useWorkspaceStore from '../../store/workspaceStore';
 import M from '../../styles/ModalStyles';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function CreateWorkspaceModal({ onClose }) {
+const queryClient = useQueryClient();
   const { mutate, isPending, error } = useCreateWorkspace();
   const setActiveWorkspace = useWorkspaceStore((s) => s.setActiveWorkspace);
-
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(workspaceSchema),
-  });
 
   const onSubmit = (data) => {
     mutate(data, {
       onSuccess: (ws) => {
+        
+        queryClient.setQueryData(['workspaces'], (old = []) => [...old, ws]);
         setActiveWorkspace(ws._id);
         onClose();
       },
     });
   };
+
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(workspaceSchema),
+  });
+
+  
 
   return (
     <div style={M.overlay}>
