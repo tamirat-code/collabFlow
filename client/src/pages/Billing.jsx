@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Check, Zap, Building2, ArrowLeft, ExternalLink } from 'lucide-react';
-import { useBillingInfo, useCreateCheckout } from '../hooks/useBilling';
+import { useBillingInfo, useCreateCheckout, usePortal } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
 
 const PLANS = [
@@ -10,7 +10,6 @@ const PLANS = [
     price: '$0',
     period: 'forever',
     features: ['1 project', '3 members', 'Kanban board', 'Basic roles'],
-    cta: 'Current plan',
     icon: null,
   },
   {
@@ -19,7 +18,6 @@ const PLANS = [
     price: '$10',
     period: 'per user / month',
     features: ['20 projects', '20 members', 'File attachments', 'Comments & activity', 'Notifications', 'Analytics dashboard', 'Calendar view'],
-    cta: 'Upgrade to Pro',
     icon: Zap,
     highlight: true,
   },
@@ -29,7 +27,6 @@ const PLANS = [
     price: '$25',
     period: 'per user / month',
     features: ['Unlimited everything', 'Custom fields', 'AI features', 'SSO / SAML', 'Audit logs', 'Public API + webhooks', 'Guest access'],
-    cta: 'Upgrade to Business',
     icon: Building2,
   },
 ];
@@ -56,6 +53,7 @@ const S = {
   infoTxt: { fontSize: '13px', color: '#3a7080' },
   infoVal: { color: '#e0f5f2', fontWeight: 500 },
   portal:  { display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid #0e3347', borderRadius: '20px', color: '#00c8b4', fontSize: '12px', cursor: 'pointer', padding: '6px 14px', fontFamily: 'inherit' },
+  success: { background: '#061f18', border: '1px solid #00c8b4', color: '#34d399', fontSize: '13px', padding: '10px 14px', borderRadius: '8px', marginBottom: '1.5rem' },
 };
 
 export default function Billing() {
@@ -63,13 +61,9 @@ export default function Billing() {
   const { activeWorkspaceId } = useWorkspaceStore();
   const { data: billing, isLoading } = useBillingInfo(activeWorkspaceId);
   const { mutate: checkout, isPending } = useCreateCheckout(activeWorkspaceId);
+  const { mutate: portal, isPending: portalPending } = usePortal(activeWorkspaceId);
 
   const currentPlan = billing?.plan || 'free';
-
-  const handleUpgrade = (planKey) => {
-    if (planKey === 'free' || planKey === currentPlan) return;
-    checkout(planKey);
-  };
 
   return (
     <div style={S.page}>
@@ -86,14 +80,14 @@ export default function Billing() {
           <div style={S.infoBox}>
             <span style={S.infoTxt}>
               Current plan: <span style={S.infoVal}>{currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
-              {billing?.currentPeriodEnd && (
-                <> &nbsp;·&nbsp; Renews <span style={S.infoVal}>{new Date(billing.currentPeriodEnd).toLocaleDateString()}</span></>
+              {billing?.stripeCurrentPeriodEnd && (
+                <> &nbsp;·&nbsp; Renews <span style={S.infoVal}>{new Date(billing.stripeCurrentPeriodEnd).toLocaleDateString()}</span></>
               )}
             </span>
-            {billing?.portalUrl && (
-              <a href={billing.portalUrl} target="_blank" rel="noreferrer" style={S.portal}>
-                Manage subscription <ExternalLink size={12} />
-              </a>
+            {currentPlan !== 'free' && (
+              <button style={S.portal} onClick={() => portal()} disabled={portalPending}>
+                {portalPending ? 'Opening...' : <><ExternalLink size={12} /> Manage subscription</>}
+              </button>
             )}
           </div>
         )}
@@ -105,9 +99,11 @@ export default function Billing() {
             const isCurrent = plan.key === currentPlan;
             const isHighlight = plan.highlight;
             const cardStyle = isHighlight ? S.cardHL : S.card;
+            const disabled = isCurrent || plan.key === 'free' || isPending;
 
-            let btnStyle = plan.key === 'free' || isCurrent ? S.btnDis : (isHighlight ? S.btnHL : S.btn);
-            let btnLabel = isCurrent ? '✓ Current plan' : plan.cta;
+            let btnStyle = disabled ? S.btnDis : (isHighlight ? S.btnHL : S.btn);
+            let btnLabel = isCurrent ? '✓ Current plan' : `Upgrade to ${plan.name}`;
+            if (plan.key === 'free') btnLabel = 'Free forever';
             if (isPending) btnLabel = 'Redirecting...';
 
             return (
@@ -131,11 +127,7 @@ export default function Billing() {
                   ))}
                 </ul>
 
-                <button
-                  style={btnStyle}
-                  disabled={isCurrent || plan.key === 'free' || isPending}
-                  onClick={() => handleUpgrade(plan.key)}
-                >
+                <button style={btnStyle} disabled={disabled} onClick={() => !disabled && checkout(plan.key)}>
                   {btnLabel}
                 </button>
               </div>
