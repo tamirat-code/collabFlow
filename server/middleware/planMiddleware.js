@@ -13,7 +13,7 @@ export const enforceMemberLimit = (req, res, next) => {
   next();
 };
 
-// Block creating projects beyond plan limit
+
 export const enforceProjectLimit = async (req, res, next) => {
   const workspace = req.workspace;
   const { maxProjects } = getPlanLimits(workspace.plan);
@@ -23,6 +23,16 @@ export const enforceProjectLimit = async (req, res, next) => {
   if (count >= maxProjects) {
     return res.status(403).json({
       message: `Your ${workspace.plan} plan allows a maximum of ${maxProjects} project(s). Upgrade to create more.`,
+      upgradeRequired: true,
+    });
+  }
+  next();
+};
+export const requirePlan = (...plans) => (req, res, next) => {
+  const workspace = req.workspace;
+  if (!plans.includes(workspace.plan)) {
+    return res.status(403).json({
+      message: `This feature requires a ${plans.join(' or ')} plan. You are on the ${workspace.plan} plan.`,
       upgradeRequired: true,
     });
   }
