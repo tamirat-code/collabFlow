@@ -23,7 +23,7 @@ const S = {
   projSection:{ flex: 1, overflowY: 'auto', padding: '0.75rem' },
   projHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: '8px' },
   projLabel:  { fontSize: '11px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em' },
-  projBtn:    { padding: '8px 10px', borderRadius: '8px', fontSize: '13px', color: '#5a8a99', background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' },
+  projBtn:    { paddingTop: '8px', paddingBottom: '8px', paddingLeft: '10px', paddingRight: '10px', borderRadius: '8px', fontSize: '13px', color: '#5a8a99', background: 'none', borderLeft: '2px solid transparent', borderTop: 'none', borderRight: 'none', borderBottom: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' },
   projBtnActive: { background: '#0a3347', color: '#00c8b4', borderLeft: '2px solid #00c8b4', paddingLeft: '8px' },
   footer:     { padding: '0.75rem', borderTop: '1px solid #0e3347' },
   userRow:    { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px' },

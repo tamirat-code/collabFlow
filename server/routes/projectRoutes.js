@@ -7,6 +7,7 @@ import { getComments, addComment, deleteComment, getActivity } from '../controll
 
 const router = express.Router({ mergeParams: true });
 
+
 router.post('/',             requireWorkspaceRole('admin', 'member'), enforceProjectLimit, createProject);
 router.get('/',              getProjects);
 router.get('/:projectId',    getProject);
@@ -15,17 +16,18 @@ router.delete('/:projectId', deleteProject);
 
 
 router.post('/:projectId/tasks',              createTask);
-router.get('/:projectId/tasks',              getTasks);
-router.put('/:projectId/tasks/:taskId',      updateTask);
-router.put('/:projectId/tasks/:taskId/move', moveTask);
-router.delete('/:projectId/tasks/:taskId',   deleteTask);
+router.get('/:projectId/tasks',               getTasks);
+router.put('/:projectId/tasks/:taskId',       updateTask);
+router.put('/:projectId/tasks/:taskId/move',  moveTask);
+router.delete('/:projectId/tasks/:taskId',    deleteTask);
+
 
 router.use('/:projectId/tasks/:taskId/comments', requirePlan('pro', 'business'));
 router.use('/:projectId/tasks/:taskId/activity', requirePlan('pro', 'business'));
 
-router.get('/:projectId/tasks/:taskId/comments',              getComments);
-router.post('/:projectId/tasks/:taskId/comments',             addComment);
+router.get('/:projectId/tasks/:taskId/comments',               getComments);
+router.post('/:projectId/tasks/:taskId/comments',              addComment);
 router.delete('/:projectId/tasks/:taskId/comments/:commentId', deleteComment);
-router.get('/:projectId/tasks/:taskId/activity',              getActivity);
+router.get('/:projectId/tasks/:taskId/activity',               getActivity);
 
 export default router;
