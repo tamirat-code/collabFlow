@@ -34,7 +34,7 @@ const S = {
   inviteBtn:  { width: '100%', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', fontSize: '12px', color: '#3a7080', background: 'none', border: 'none', cursor: 'pointer', marginTop: '4px' },
 };
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const navigate = useNavigate();
   const { data: user } = useMe();
   const { data: workspaces, isLoading: loadingWs } = useWorkspaces();

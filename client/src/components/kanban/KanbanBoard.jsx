@@ -68,18 +68,30 @@ export default function KanbanBoard({ workspaceId, projectId }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-     <div
+     {/* columns wrapper */}
+<div
   style={{
     display: 'flex',
     gap: '1rem',
     overflowX: 'auto',
     paddingBottom: '1rem',
-  
     WebkitOverflowScrolling: 'touch',
+    scrollSnapType: 'x mandatory',
   }}
 >
   {STATUSES.map((status) => (
-    <div key={status} style={{ minWidth: '260px', flex: '1' }}>
+    <div
+      key={status}
+      style={{
+        minWidth: '280px',
+        flex: '0 0 280px',
+        scrollSnapAlign: 'start',
+       
+        width: 'min(280px, 85vw)',
+        minWidth: 'min(280px, 85vw)',
+        flex: `0 0 min(280px, 85vw)`,
+      }}
+    >
       <KanbanColumn
         status={status}
         tasks={tasksByStatus(status)}

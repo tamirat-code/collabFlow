@@ -25,7 +25,6 @@ export const fetchClient = async (endpoint, options = {}) => {
   let accessToken = useAuthStore.getState().accessToken;
   const isAuthEndpoint = AUTH_ENDPOINTS.some((e) => endpoint.startsWith(e));
 
-  
   if (!accessToken && !options._retry && !isAuthEndpoint) {
     accessToken = await tryRefresh();
     if (!accessToken) {
@@ -35,8 +34,11 @@ export const fetchClient = async (endpoint, options = {}) => {
     }
   }
 
+  const isFormData = options.body instanceof FormData;
+
   const headers = {
-    'Content-Type': 'application/json',
+    
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
   };
@@ -47,7 +49,6 @@ export const fetchClient = async (endpoint, options = {}) => {
     credentials: 'include',
   });
 
-  
   if (res.status === 401 && !options._retry && !isAuthEndpoint) {
     const newToken = await tryRefresh();
     if (newToken) {
