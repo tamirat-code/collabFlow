@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus ,Zap} from 'lucide-react';
+import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus ,Zap,X} from 'lucide-react';
 import { useWorkspaces, useCreateWorkspace, useInviteMember } from '../hooks/useWorkspaces';
 import { useProjects, useCreateProject } from '../hooks/useProjects';
 import { useLogout, useMe } from '../hooks/useAuth';
@@ -61,11 +61,18 @@ export default function Sidebar() {
   return (
     <aside style={S.sidebar}>
    
-      <div style={S.logo}>
+      <div style={{ ...S.logo, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={S.logoText}>CollabFlow</span>
+      
+        <button
+          onClick={onClose}
+          className="md:hidden"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080', display: 'flex' }}
+        >
+          <X size={18} />
+        </button>
       </div>
-
-      {/* Workspace switcher */}
+    
       <div style={S.wsSection}>
         <button style={S.wsBtn} onClick={() => setShowWsDropdown(!showWsDropdown)}>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -122,23 +129,26 @@ export default function Sidebar() {
           <p style={{ fontSize: '12px', color: '#2a6070', padding: '0 8px' }}>No projects yet</p>
         )}
 
-        {projects?.map((project) => (
-          <button
-            key={project._id}
-            onClick={() => setActiveProject(project._id)}
-            style={{
-              ...S.projBtn,
-              ...(project._id === activeProjectId ? S.projBtnActive : {}),
-            }}
-            onMouseEnter={e => { if (project._id !== activeProjectId) e.currentTarget.style.background = '#071a27'; }}
-            onMouseLeave={e => { if (project._id !== activeProjectId) e.currentTarget.style.background = 'none'; }}
-          >
-            <LayoutGrid size={14} style={{ flexShrink: 0, color: project._id === activeProjectId ? '#00c8b4' : '#2a6070' }} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {project.name}
-            </span>
-          </button>
-        ))}
+       {projects?.map((project) => (
+  <button
+    key={project._id}
+    onClick={() => {
+      setActiveProject(project._id);
+      onClose?.();
+    }}
+    style={{
+      ...S.projBtn,
+      ...(project._id === activeProjectId ? S.projBtnActive : {}),
+    }}
+    onMouseEnter={e => { if (project._id !== activeProjectId) e.currentTarget.style.background = '#071a27'; }}
+    onMouseLeave={e => { if (project._id !== activeProjectId) e.currentTarget.style.background = 'none'; }}
+  >
+    <LayoutGrid size={14} style={{ flexShrink: 0, color: project._id === activeProjectId ? '#00c8b4' : '#2a6070' }} />
+    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      {project.name}
+    </span>
+  </button>
+))}
       </div>
 
    <div className="px-3 pb-2">

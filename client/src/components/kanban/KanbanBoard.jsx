@@ -36,16 +36,16 @@ export default function KanbanBoard({ workspaceId, projectId }) {
     const activeTask = tasks.find((t) => t._id === active.id);
     if (!activeTask) return;
 
-    // Determine target status: either a column id, or the status of a task being hovered
+    
     let targetStatus = over.id;
     let targetOrder;
 
     if (STATUSES.includes(over.id)) {
-      // Dropped on empty column area
+     
       const columnTasks = tasksByStatus(over.id);
       targetOrder = columnTasks.length;
     } else {
-      // Dropped on another task
+    
       const overTask = tasks.find((t) => t._id === over.id);
       if (!overTask) return;
       targetStatus = overTask.status;
@@ -68,17 +68,27 @@ export default function KanbanBoard({ workspaceId, projectId }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1">
-        {STATUSES.map((status) => (
-          <KanbanColumn
-            key={status}
-            status={status}
-            tasks={tasksByStatus(status)}
-            workspaceId={workspaceId}
-            projectId={projectId}
-          />
-        ))}
-      </div>
+     <div
+  style={{
+    display: 'flex',
+    gap: '1rem',
+    overflowX: 'auto',
+    paddingBottom: '1rem',
+  
+    WebkitOverflowScrolling: 'touch',
+  }}
+>
+  {STATUSES.map((status) => (
+    <div key={status} style={{ minWidth: '260px', flex: '1' }}>
+      <KanbanColumn
+        status={status}
+        tasks={tasksByStatus(status)}
+        workspaceId={workspaceId}
+        projectId={projectId}
+      />
+    </div>
+  ))}
+</div>
 
       <DragOverlay>
         {activeTask && (
