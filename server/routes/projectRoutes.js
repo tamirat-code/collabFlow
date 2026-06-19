@@ -31,7 +31,7 @@ router.post('/:projectId/tasks/:taskId/comments',              addComment);
 router.delete('/:projectId/tasks/:taskId/comments/:commentId', deleteComment);
 router.get('/:projectId/tasks/:taskId/activity',               getActivity);
 
-
+router.use('/:projectId/tasks/:taskId/attachments', requirePlan('pro', 'business'));
 
 router.get('/:projectId/tasks/:taskId/attachments',                    getAttachments);
 router.post('/:projectId/tasks/:taskId/attachments', upload.single('file'), uploadAttachment);

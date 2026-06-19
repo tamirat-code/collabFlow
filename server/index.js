@@ -11,6 +11,7 @@ import 'express-async-errors';
 import authRoutes from './routes/authRoutes.js';
 import workspaceRoutes from './routes/workspaceRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import http from 'http';
 import { initSocket } from './socket.js';
 
@@ -32,9 +33,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.use('/api/auth',       authRoutes);
-app.use('/api/workspaces', workspaceRoutes);
-app.use('/api/billing',    billingRoutes);
+app.use('/api/auth',          authRoutes);
+app.use('/api/workspaces',    workspaceRoutes);
+app.use('/api/billing',       billingRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 
 app.use((err, req, res, next) => {

@@ -2,6 +2,7 @@ import Comment from '../models/Comment.js';
 import Activity from '../models/Activity.js';
 import Task from '../models/Task.js';
 import { getIO } from '../socket.js';
+import { notify } from '../utils/Notify.js';
 
 export const getComments = async (req, res) => {
   const comments = await Comment.find({ task: req.params.taskId })
@@ -14,7 +15,7 @@ export const addComment = async (req, res) => {
   const { content } = req.body;
   if (!content?.trim()) return res.status(400).json({ message: 'Comment cannot be empty' });
 
-  const task = await Task.findById(req.params.taskId);
+  const task = await Task.findById(req.params.taskId).populate('createdBy assignee');
   if (!task) return res.status(404).json({ message: 'Task not found' });
 
   const comment = await Comment.create({
@@ -38,6 +39,23 @@ export const addComment = async (req, res) => {
     taskId: task._id,
     comment: populated,
   });
+
+ 
+  const recipients = new Set();
+  if (task.createdBy?._id) recipients.add(task.createdBy._id.toString());
+  if (task.assignee?._id)  recipients.add(task.assignee._id.toString());
+
+  for (const recipientId of recipients) {
+    await notify({
+      recipientId,
+      senderId:    req.user.id,
+      type:        'comment',
+      taskId:      task._id,
+      projectId:   task.project,
+      workspaceId: req.workspace?._id,
+      message:     `commented on "${task.title}"`,
+    });
+  }
 
   res.status(201).json(populated);
 };

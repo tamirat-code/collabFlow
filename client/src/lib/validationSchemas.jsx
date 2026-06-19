@@ -46,6 +46,7 @@ export const taskSchema = z.object({
   description: z.string().max(500).optional(),
   priority: z.enum(['low', 'medium', 'high']),
   dueDate: z.string().optional(),
+  assignee: z.string().optional(),
 });
 
 export const inviteSchema = z.object({

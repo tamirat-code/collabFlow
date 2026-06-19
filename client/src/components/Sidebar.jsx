@@ -9,6 +9,7 @@ import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 import CreateWorkspaceModal from './modals/CreateWorkspaceModal';
 import CreateProjectModal from './modals/CreateProjectModal';
 import InviteMemberModal from './modals/InviteMemberModal';
+import NotificationBell from './NotificationBell';
 
 const S = {
   sidebar:    { background: '#051e2e', borderRight: '1px solid #0e3347', height: '100vh', width: '256px', display: 'flex', flexDirection: 'column', flexShrink: 0 },
@@ -173,6 +174,7 @@ export default function Sidebar({ onClose }) {
             <p style={S.userName}>{user?.name}</p>
             <p style={S.userRole}>{user?.role}</p>
           </div>
+          <NotificationBell />
           <button style={S.iconBtn} onClick={handleLogout} title="Logout">
             <LogOut size={15} />
           </button>

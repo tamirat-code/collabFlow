@@ -2,12 +2,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useCreateTask } from '../../hooks/useTasks';
+import { useWorkspaces } from '../../hooks/useWorkspaces';
 import { taskSchema } from '../../lib/validationSchemas';
 import M from '../../styles/ModalStyles';
 
-
 export default function CreateTaskModal({ workspaceId, projectId, defaultStatus = 'todo', onClose }) {
   const { mutate, isPending, error } = useCreateTask(workspaceId, projectId);
+  const { data: workspace } = useWorkspaces(workspaceId);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(taskSchema),
@@ -15,7 +16,10 @@ export default function CreateTaskModal({ workspaceId, projectId, defaultStatus 
   });
 
   const onSubmit = (data) => {
-    mutate({ ...data, status: defaultStatus }, { onSuccess: onClose });
+    // Don't send empty string assignee — backend expects a valid ObjectId or nothing
+    const payload = { ...data, status: defaultStatus };
+    if (!payload.assignee) delete payload.assignee;
+    mutate(payload, { onSuccess: onClose });
   };
 
   return (
@@ -50,7 +54,7 @@ export default function CreateTaskModal({ workspaceId, projectId, defaultStatus 
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
             <div>
               <label style={M.label}>Priority</label>
               <select {...register('priority')} style={M.input}>
@@ -67,6 +71,18 @@ export default function CreateTaskModal({ workspaceId, projectId, defaultStatus 
                 style={M.input}
               />
             </div>
+          </div>
+
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={M.label}>Assign to</label>
+            <select {...register('assignee')} style={M.input} defaultValue="">
+              <option value="">Unassigned</option>
+              {workspace?.members?.map((m) => (
+                <option key={m.user._id} value={m.user._id}>
+                  {m.user.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button type="submit" disabled={isPending} style={{ ...M.btn, opacity: isPending ? 0.6 : 1 }}>

@@ -1,6 +1,7 @@
 import Task from '../models/Task.js';
 import Activity from '../models/Activity.js';
 import { getIO } from '../socket.js';
+import { notify } from '../utils/Notify.js';
 
 export const createTask = async (req, res) => {
   const { title, description, status, priority, dueDate, assignee } = req.body;
@@ -25,6 +26,18 @@ export const createTask = async (req, res) => {
     type: 'created',
     meta: { title },
   });
+
+  if (assignee && assignee !== req.user.id) {
+    await notify({
+      recipientId: assignee,
+      senderId:    req.user.id,
+      type:        'assigned',
+      taskId:      task._id,
+      projectId:   req.params.projectId,
+      workspaceId: req.workspace?._id,
+      message:     `assigned you to "${title}"`,
+    });
+  }
 
   getIO().to(`project:${req.params.projectId}`).emit('task:created', populated);
   res.status(201).json(populated);
@@ -62,6 +75,18 @@ export const updateTask = async (req, res) => {
       project: task.project,
       user: req.user.id,
     })));
+  }
+
+  if (req.body.assignee && req.body.assignee !== req.user.id && req.body.assignee !== old.assignee?.toString()) {
+    await notify({
+      recipientId: req.body.assignee,
+      senderId:    req.user.id,
+      type:        'assigned',
+      taskId:      task._id,
+      projectId:   task.project,
+      workspaceId: req.workspace?._id,
+      message:     `assigned you to "${task.title}"`,
+    });
   }
 
   getIO().to(`project:${task.project}`).emit('task:updated', task);
