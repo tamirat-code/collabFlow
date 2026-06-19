@@ -4,10 +4,10 @@ import jwt from 'jsonwebtoken';
 
 import { sendEmail } from '../utils/sendEmail.js';
 import crypto from 'crypto';
-import { passwordResetTemplate } from '../utils/emailTemplates.js';
 
 
-  import { welcomeEmailTemplate } from '../utils/emailTemplates.js';
+
+  import { welcomeEmailTemplate,emailVerificationTemplate,passwordResetTemplate, resendVerificationTemplate } from '../utils/emailTemplates.js';
 
 
 export const forgotPassword = async (req, res) => {
@@ -55,28 +55,76 @@ export const resetPassword = async (req, res) => {
 
   res.json({ message: 'Password reset successful. Please log in.' });
 };
+export const verifyEmail = async (req, res) => {
+  const { token } = req.params;
+
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: 'Invalid or expired verification token' });
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save();
+
+  res.json({ message: 'Email verified successfully! You can now log in.' });
+};
+export const resendVerificationEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.json({ message: 'If that email exists, a verification link has been sent.' });
+  }
+
+  if (user.isEmailVerified) {
+    return res.status(400).json({ message: 'Email already verified' });
+  }
+
+  
+  const verificationToken = user.generateEmailVerificationToken();
+  await user.save();
+
+  const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+
+  sendEmail({
+    to: user.email,
+    subject: 'Verify Your Email - CollabFlow',
+    html: resendVerificationTemplate(verificationUrl, user.name),
+  }).catch(console.error);
+
+  res.json({ message: 'Verification email sent. Please check your email.' });
+};
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
   const exists = await User.findOne({ email });
   if (exists) return res.status(400).json({ message: 'Email already in use' });
 
   const user = await User.create({ name, email, password });
-  const accessToken = generateAccessToken(user._id,user.role);
-  const refreshToken = generateRefreshToken(user._id,user.role);
-  setRefreshTokenCookie(res, refreshToken);
+  
+ 
+  const verificationToken = user.generateEmailVerificationToken();
+  await user.save();
 
+  const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
-sendEmail({
-  to: user.email,
-  subject: 'Welcome to CollabFlow! 🎉',
-  html: welcomeEmailTemplate(user.name),
-}).catch(console.error);
+  sendEmail({
+    to: user.email,
+    subject: 'Verify Your Email - CollabFlow',
+    html: emailVerificationTemplate(verificationUrl, user.name),
+  }).catch(console.error);
 
   res.status(201).json({
-    accessToken,
-    user: { id: user._id, name: user.name, email: user.email, role: user.role }
+    message: 'Registration successful. Please check your email to verify your account.',
+    user: { id: user._id, name: user.name, email: user.email, isEmailVerified: user.isEmailVerified }
   });
-
 };
 
 
@@ -86,11 +134,18 @@ export const login = async (req, res) => {
   if (!user || !(await user.comparePassword(password)))
     return res.status(401).json({ message: 'Invalid credentials' });
 
-    if (!user.password) {
+  if (!user.isEmailVerified) {
+    return res.status(403).json({ 
+      message: 'Please verify your email first',
+      needsVerification: true,
+      email: user.email
+    });
+  }
+
+  if (!user.password) {
     return res.status(401).json({ message: 'This account uses Google sign-in. Please continue with Google.' });
   }
-    const isMatch = await user.comparePassword(password);
-  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
   const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id);
   setRefreshTokenCookie(res, refreshToken);
@@ -100,7 +155,6 @@ export const login = async (req, res) => {
     user: { id: user._id, name: user.name, email: user.email, role: user.role }
   });
 };
-
 
 export const refresh = async (req, res) => {
   const token = req.cookies.refreshToken;

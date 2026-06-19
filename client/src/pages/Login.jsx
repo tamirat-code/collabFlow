@@ -23,6 +23,8 @@ export default function AuthPage() {
   const [animating, setAnimating] = useState(false);
   const [overlayFull, setOverlayFull] = useState(false);
   const [nextMode, setNextMode] = useState(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const { mutate: login, isPending: loginPending, error: loginError } = useLogin();
   const { mutate: registerUser, isPending: registerPending, error: registerError } = useRegister();
@@ -31,11 +33,23 @@ export default function AuthPage() {
   const registerForm = useForm({ resolver: zodResolver(registerSchema) });
 
   const onLoginSubmit = (data) => {
-    login(data, { onSuccess: () => navigate('/dashboard') });
+    login(data, { 
+      onSuccess: () => navigate('/dashboard'),
+      onError: (error) => {
+        if (error.response?.data?.needsVerification) {
+          setUnverifiedEmail(error.response.data.email);
+        }
+      }
+    });
   };
 
   const onRegisterSubmit = (data) => {
-    registerUser(data, { onSuccess: () => navigate('/dashboard') });
+    registerUser(data, { 
+      onSuccess: () => {
+        setRegistrationSuccess(true);
+        registerForm.reset();
+      }
+    });
   };
 
   const switchMode = (target) => {
@@ -146,9 +160,35 @@ export default function AuthPage() {
                 </h1>
 
                 {loginError && (
-                  <p style={{ color: '#f87171', fontSize: '13px', marginBottom: '1rem' }}>
-                    {loginError.message}
-                  </p>
+                  <>
+                    <p style={{ color: '#f87171', fontSize: '13px', marginBottom: '1rem' }}>
+                      {loginError.message}
+                    </p>
+                    {loginError.message?.toLowerCase().includes('verify') && (
+                      <div style={{ background: '#2a1f1f', border: '1px solid #ff6b6b', borderRadius: '8px', padding: '12px', marginBottom: '1rem', fontSize: '12px', color: '#ff6b6b', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => navigate('/resend-verification', { state: { email: loginForm.getValues('email') } })}
+                          style={{ background: '#ff6b6b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}
+                        >
+                          📧 Resend Verification Email
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {unverifiedEmail && (
+                  <div style={{ background: '#2a1f1f', border: '1px solid #ff6b6b', borderRadius: '8px', padding: '12px', marginBottom: '1rem', fontSize: '13px', color: '#ff6b6b' }}>
+                    <p style={{ margin: '0 0 8px 0' }}>📧 Please verify your email to continue</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/resend-verification', { state: { email: unverifiedEmail } })}
+                      style={{ background: '#ff6b6b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}
+                    >
+                      Resend Verification Email
+                    </button>
+                  </div>
                 )}
 
                 <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
@@ -205,52 +245,73 @@ export default function AuthPage() {
                   sign Up
                 </h1>
 
-                {registerError && (
-                  <p style={{ color: '#f87171', fontSize: '13px', marginBottom: '1rem' }}>
-                    {registerError.message}
-                  </p>
+                {registrationSuccess && (
+                  <div style={{ background: '#061f18', border: '1px solid #00c8b4', borderRadius: '8px', padding: '16px', marginBottom: '1rem', textAlign: 'center', color: '#00c8b4', fontSize: '13px', lineHeight: 1.6 }}>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>✅ Registration Successful!</p>
+                    <p style={{ margin: '0 0 12px 0' }}>Please check your email for a verification link to activate your account.</p>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setRegistrationSuccess(false);
+                        switchMode('login');
+                      }}
+                      style={{ background: '#00c8b4', color: '#020f18', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      Back to Login
+                    </button>
+                  </div>
                 )}
 
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                  <Field
-  registration={registerForm.register('name')}
-  placeholder="Name"
-  type="text"
-  icon="&#128100;"
-  error={registerForm.formState.errors.name?.message}
-/>
-                  <Field
-                    registration={registerForm.register('email')}
-                    placeholder="Email"
-                    type="email"
-                    icon="&#9993;"
-                    error={registerForm.formState.errors.email?.message}
-                  />
-                  <Field
-                    registration={registerForm.register('password')}
-                    placeholder="password"
-                    type="password"
-                    icon="&#128274;"
-                    error={registerForm.formState.errors.password?.message}
-                  />
+                {!registrationSuccess && (
+                  <>
+                    {registerError && (
+                      <p style={{ color: '#f87171', fontSize: '13px', marginBottom: '1rem' }}>
+                        {registerError.message}
+                      </p>
+                    )}
 
-                  <NeonButton type="submit" disabled={registerPending}>
-                    {registerPending ? 'Creating account...' : 'Sign up'}
-                  </NeonButton>
-                </form>
+                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
+                      <Field
+                        registration={registerForm.register('name')}
+                        placeholder="Name"
+                        type="text"
+                        icon="&#128100;"
+                        error={registerForm.formState.errors.name?.message}
+                      />
+                      <Field
+                        registration={registerForm.register('email')}
+                        placeholder="Email"
+                        type="email"
+                        icon="&#9993;"
+                        error={registerForm.formState.errors.email?.message}
+                      />
+                      <Field
+                        registration={registerForm.register('password')}
+                        placeholder="password"
+                        type="password"
+                        icon="&#128274;"
+                        error={registerForm.formState.errors.password?.message}
+                      />
 
-                <GoogleBtn />
+                      <NeonButton type="submit" disabled={registerPending}>
+                        {registerPending ? 'Creating account...' : 'Sign up'}
+                      </NeonButton>
+                    </form>
 
-                <p style={{ textAlign: 'center', fontSize: '12px', color: '#3a7080', marginTop: '1rem' }}>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => switchMode('login')}
-                    style={{ color: '#00c8b4', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
-                  >
-                    Login
-                  </button>
-                </p>
+                    <GoogleBtn />
+
+                    <p style={{ textAlign: 'center', fontSize: '12px', color: '#3a7080', marginTop: '1rem' }}>
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => switchMode('login')}
+                        style={{ color: '#00c8b4', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
+                      >
+                        Login
+                      </button>
+                    </p>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

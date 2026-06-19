@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema({
   role:     { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
   resetPasswordToken:   { type: String },
   resetPasswordExpires: { type: Date },
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
 }, { timestamps: true });
 
 userSchema.pre('save', function () {
@@ -38,5 +41,16 @@ userSchema.methods.generateResetToken = function () {
 
   return resetToken; 
 };
+userSchema.methods.generateEmailVerificationToken = function () {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
 
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+  return verificationToken;
+};
 export default mongoose.model('User', userSchema);

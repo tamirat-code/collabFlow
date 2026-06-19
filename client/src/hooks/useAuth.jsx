@@ -16,14 +16,9 @@ export const useMe = () => {
 };
 
 export const useRegister = () => {
-  const setAuth = useAuthStore((s) => s.setAuth);
-
   return useMutation({
     mutationFn: (data) =>
       fetchClient('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: (data) => {
-      setAuth(data.user, data.accessToken);
-    },
   });
 };
 

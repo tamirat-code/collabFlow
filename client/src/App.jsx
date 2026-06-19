@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
-
 import Dashboard from './pages/Dashboard';
 import AuthCallback from './pages/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Billing from './pages/Billing';
+import VerifyEmail from './pages/VerifyEmail';
+import ResendVerification from './pages/ResendVerification';
 import ToastContainer from './components/ToastContainer';
 
 export default function App() {
@@ -17,6 +18,8 @@ export default function App() {
       <Routes>
         <Route path="/"                     element={<Home />} />
         <Route path="/login"                element={<Login />} />
+        <Route path="/verify-email/:token"  element={<VerifyEmail />} />
+        <Route path="/resend-verification"  element={<ResendVerification />} />
 
         <Route path="/auth/callback"        element={<AuthCallback />} />
         <Route path="/forgot-password"      element={<ForgotPassword />} />

@@ -165,3 +165,66 @@ export const notificationTemplate = (senderName, message, taskTitle) => `
 </body>
 </html>
 `;
+export const emailVerificationTemplate = (verificationUrl, name) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f5f5f5; }
+          .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+          .header { text-align: center; color: #00c8b4; margin-bottom: 20px; }
+          .button { display: inline-block; background: #00c8b4; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin: 20px 0; }
+          .footer { text-align: center; color: #666; margin-top: 20px; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to CollabFlow! 🎉</h1>
+          </div>
+          <p>Hi ${name},</p>
+          <p>Thanks for signing up! Please verify your email address to get started.</p>
+          <p>This link expires in 24 hours.</p>
+          <a href="${verificationUrl}" class="button">Verify Email</a>
+          <p>Or copy this link: <br><code>${verificationUrl}</code></p>
+          <div class="footer">
+            <p>If you didn't create this account, please ignore this email.</p>
+            <p>&copy; 2026 CollabFlow. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+};
+
+export const resendVerificationTemplate = (verificationUrl, name) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f5f5f5; }
+          .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+          .header { text-align: center; color: #00c8b4; margin-bottom: 20px; }
+          .button { display: inline-block; background: #00c8b4; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin: 20px 0; }
+          .footer { text-align: center; color: #666; margin-top: 20px; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Verify Your Email</h1>
+          </div>
+          <p>Hi ${name},</p>
+          <p>Here's your new verification link (expires in 24 hours):</p>
+          <a href="${verificationUrl}" class="button">Verify Email</a>
+          <p>Or copy this link: <br><code>${verificationUrl}</code></p>
+          <div class="footer">
+            <p>&copy; 2026 CollabFlow. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+};
