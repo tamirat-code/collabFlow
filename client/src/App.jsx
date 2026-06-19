@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home';
 import Login from './pages/Login';
 
 import Dashboard from './pages/Dashboard';
@@ -14,8 +15,9 @@ export default function App() {
     <BrowserRouter>
       <ToastContainer />
       <Routes>
+        <Route path="/"                     element={<Home />} />
         <Route path="/login"                element={<Login />} />
-       
+
         <Route path="/auth/callback"        element={<AuthCallback />} />
         <Route path="/forgot-password"      element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -25,7 +27,7 @@ export default function App() {
           <Route path="/billing"    element={<Billing />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

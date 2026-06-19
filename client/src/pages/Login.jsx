@@ -1,5 +1,5 @@
-import { useState ,useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { loginSchema, registerSchema } from '../lib/validationSchemas';
 import useAuthStore from '../store/authStore';
 export default function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -18,7 +19,7 @@ export default function AuthPage() {
     }
   }, [isAuthenticated, accessToken]);
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [mode, setMode] = useState(location.state?.mode === 'register' ? 'register' : 'login');
   const [animating, setAnimating] = useState(false);
   const [overlayFull, setOverlayFull] = useState(false);
   const [nextMode, setNextMode] = useState(null);
@@ -42,20 +43,17 @@ export default function AuthPage() {
     setAnimating(true);
     setNextMode(target);
 
-    // step 1: expand overlay top → bottom
     setOverlayFull(true);
 
-    // step 2: swap mode while covered
     setTimeout(() => {
       setMode(target);
     }, 450);
 
-    // step 3: collapse overlay
     setTimeout(() => {
       setOverlayFull(false);
     }, 500);
 
-    // step 4: done
+  
     setTimeout(() => {
       setAnimating(false);
       setNextMode(null);
@@ -78,7 +76,7 @@ export default function AuthPage() {
           boxShadow: '0 0 40px #00e5d130, 0 0 80px #00e5d110',
         }}
       >
-        {/* teal background — always visible behind */}
+      
         <div
           className="absolute inset-0"
           style={{
@@ -87,7 +85,7 @@ export default function AuthPage() {
           }}
         />
 
-        {/* welcome text — positioned based on mode */}
+      
         <div
           className="absolute top-0 bottom-0 flex flex-col justify-center"
           style={{
@@ -120,7 +118,7 @@ export default function AuthPage() {
           </p>
         </div>
 
-        {/* dark form panel */}
+       
         <div
           className="absolute top-0 bottom-0 flex flex-col justify-center"
           style={{
@@ -258,7 +256,7 @@ export default function AuthPage() {
           </AnimatePresence>
         </div>
 
-        {/* teal overlay — expands top → bottom during transition */}
+      
         <motion.div
           className="absolute left-0 right-0 top-0"
           style={{
