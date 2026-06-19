@@ -23,6 +23,8 @@ export const createCheckoutSession = async (req, res) => {
   const { plan } = req.body;
   const workspace = req.workspace;
 
+  if (!workspace) return res.status(400).json({ message: 'Workspace not found. Please select a workspace.' });
+
   const priceId = PRICES[plan];
   if (!priceId) return res.status(400).json({ message: 'Invalid plan' });
 
@@ -81,60 +83,66 @@ export const handleWebhook = async (req, res) => {
     return res.status(400).json({ message: `Webhook error: ${err.message}` });
   }
 
+  // Always respond 200 immediately for webhook reliability
+  res.json({ received: true });
+
   const obj = event.data.object;
 
-  switch (event.type) {
+  try {
+    switch (event.type) {
 
-    case 'checkout.session.completed': {
-      // obj.subscription may be null — retrieve the full session with subscription expanded
-      const fullSession = await stripe.checkout.sessions.retrieve(obj.id, {
-        expand: ['subscription'],
-      });
+      case 'checkout.session.completed': {
+        
+        const fullSession = await stripe.checkout.sessions.retrieve(obj.id, {
+          expand: ['subscription'],
+        });
 
-      const sub = fullSession.subscription;
-      if (!sub) break; // safety — shouldn't happen for subscription mode
+        const sub = fullSession.subscription;
+        if (!sub) break; 
 
-      const workspaceId = fullSession.metadata?.workspaceId;
-      const plan        = fullSession.metadata?.plan;
-      if (!workspaceId || !plan) break;
+        const workspaceId = fullSession.metadata?.workspaceId;
+        const plan        = fullSession.metadata?.plan;
+        if (!workspaceId || !plan) break;
 
-      const periodEnd = sub.current_period_end
-        ? new Date(sub.current_period_end * 1000)
-        : null;
+        const periodEnd = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000)
+          : null;
 
-      await Workspace.findByIdAndUpdate(workspaceId, {
-        plan,
-        stripeSubscriptionId:   sub.id,
-        stripePriceId:          sub.items.data[0]?.price?.id ?? null,
-        stripeCurrentPeriodEnd: periodEnd,
-      });
-      break;
+        await Workspace.findByIdAndUpdate(workspaceId, {
+          plan,
+          stripeSubscriptionId:   sub.id,
+          stripePriceId:          sub.items.data[0]?.price?.id ?? null,
+          stripeCurrentPeriodEnd: periodEnd,
+        });
+        break;
+      }
+
+      case 'invoice.paid': {
+        const subscriptionId = obj.subscription;
+        if (!subscriptionId) break;
+
+        const sub = await stripe.subscriptions.retrieve(subscriptionId);
+        const periodEnd = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000)
+          : null;
+
+        await Workspace.findOneAndUpdate(
+          { stripeSubscriptionId: subscriptionId },
+          { stripeCurrentPeriodEnd: periodEnd }
+        );
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        await Workspace.findOneAndUpdate(
+          { stripeSubscriptionId: obj.id },
+          { plan: 'free', stripeSubscriptionId: null, stripePriceId: null, stripeCurrentPeriodEnd: null }
+        );
+        break;
+      }
     }
-
-    case 'invoice.paid': {
-      const subscriptionId = obj.subscription;
-      if (!subscriptionId) break;
-
-      const sub = await stripe.subscriptions.retrieve(subscriptionId);
-      const periodEnd = sub.current_period_end
-        ? new Date(sub.current_period_end * 1000)
-        : null;
-
-      await Workspace.findOneAndUpdate(
-        { stripeSubscriptionId: subscriptionId },
-        { stripeCurrentPeriodEnd: periodEnd }
-      );
-      break;
-    }
-
-    case 'customer.subscription.deleted': {
-      await Workspace.findOneAndUpdate(
-        { stripeSubscriptionId: obj.id },
-        { plan: 'free', stripeSubscriptionId: null, stripePriceId: null, stripeCurrentPeriodEnd: null }
-      );
-      break;
-    }
+  } catch (err) {
+    console.error('Webhook processing error:', err.message);
+    // Don't throw — response already sent
   }
-
-  res.json({ received: true });
 };

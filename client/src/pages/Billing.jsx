@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Check, Zap, Building2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { useBillingInfo, useCreateCheckout, usePortal } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
@@ -25,7 +26,7 @@ const PLANS = [
   {
     key: 'business',
     name: 'Business',
-    price: '$25',
+    price: '$20',
     period: 'per user / month',
     features: ['Unlimited everything', 'Custom fields', 'AI features', 'SSO / SAML', 'Audit logs', 'Public API + webhooks', 'Guest access'],
     icon: Building2,
@@ -64,9 +65,24 @@ export default function Billing() {
   const { data: billing, isLoading } = useBillingInfo(activeWorkspaceId);
   const { mutate: checkout, isPending } = useCreateCheckout(activeWorkspaceId);
   const { mutate: portal, isPending: portalPending } = usePortal(activeWorkspaceId);
+  const [pendingPlan, setPendingPlan] = useState(null);
 
   const currentPlan = billing?.plan || 'free';
-
+if (!activeWorkspaceId) {
+  return (
+    <div style={{ minHeight: '100vh', background: '#020f18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ color: '#e0f5f2', fontSize: '16px', textAlign: 'center' }}>
+        Please select or create a workspace first.
+      </div>
+      <button 
+        onClick={() => navigate('/dashboard')}
+        style={{ background: '#00c8b4', border: 'none', color: '#020f18', padding: '10px 24px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+      >
+        Go to Dashboard
+      </button>
+    </div>
+  );
+}
   return (
     <div style={S.page}>
       <div style={S.inner}>
@@ -101,12 +117,18 @@ export default function Billing() {
             const isCurrent = plan.key === currentPlan;
             const isHighlight = plan.highlight;
             const cardStyle = isHighlight ? S.cardHL : S.card;
-            const disabled = isCurrent || plan.key === 'free' || isPending;
+            const isThisPlanPending = pendingPlan === plan.key && isPending;
+            const disabled = isCurrent || plan.key === 'free' || isThisPlanPending;
 
             let btnStyle = disabled ? S.btnDis : (isHighlight ? S.btnHL : S.btn);
             let btnLabel = isCurrent ? '✓ Current plan' : `Upgrade to ${plan.name}`;
             if (plan.key === 'free') btnLabel = 'Free forever';
-            if (isPending) btnLabel = 'Redirecting...';
+            if (isThisPlanPending) btnLabel = 'Redirecting...';
+
+            const handleCheckout = (planKey) => {
+              setPendingPlan(planKey);
+              checkout(planKey);
+            };
 
             return (
               <div key={plan.key} style={cardStyle}>
@@ -129,7 +151,7 @@ export default function Billing() {
                   ))}
                 </ul>
 
-                <button style={btnStyle} disabled={disabled} onClick={() => !disabled && checkout(plan.key)}>
+                <button style={btnStyle} disabled={disabled} onClick={() => !disabled && handleCheckout(plan.key)}>
                   {btnLabel}
                 </button>
               </div>

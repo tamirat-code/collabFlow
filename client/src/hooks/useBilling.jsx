@@ -8,13 +8,13 @@ export const useBillingInfo = (workspaceId) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const success = searchParams.get('success');
 
-  // When Stripe redirects back with ?success=true, invalidate and refetch
+  
   useEffect(() => {
     if (success === 'true' && workspaceId) {
       queryClient.invalidateQueries({ queryKey: ['billing', workspaceId] });
-      // Also invalidate workspaces so sidebar plan badge updates
+      
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      // Remove the query param so it doesn't keep refetching
+      
       setSearchParams({});
     }
   }, [success, workspaceId]);
@@ -23,19 +23,24 @@ export const useBillingInfo = (workspaceId) => {
     queryKey: ['billing', workspaceId],
     queryFn: () => fetchClient(`/billing/${workspaceId}/status`),
     enabled: !!workspaceId,
-    staleTime: 0, // always refetch on mount
+    staleTime: 0, 
   });
 };
 
 export const useCreateCheckout = (workspaceId) => {
   return useMutation({
-    mutationFn: (plan) =>
-      fetchClient(`/billing/${workspaceId}/checkout`, {
+    mutationFn: (plan) => {
+      if (!workspaceId) throw new Error("Missing workspaceId");
+      return fetchClient(`/billing/${workspaceId}/checkout`, {
         method: 'POST',
         body: JSON.stringify({ plan }),
-      }),
+      });
+    },
     onSuccess: ({ url }) => {
       window.location.href = url;
+    },
+    onError: (err) => {
+      alert(err.message || 'Failed to create checkout session. Please try again.');
     },
   });
 };
