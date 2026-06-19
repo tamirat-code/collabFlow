@@ -77,7 +77,8 @@ export const updateTask = async (req, res) => {
     })));
   }
 
-  if (req.body.assignee && req.body.assignee !== req.user.id && req.body.assignee !== old.assignee?.toString()) {
+  if (req.body.assignee && req.body.assignee !== old.assignee?.toString())
+ {
     await notify({
       recipientId: req.body.assignee,
       senderId:    req.user.id,

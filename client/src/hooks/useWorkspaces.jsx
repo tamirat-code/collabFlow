@@ -8,6 +8,15 @@ export const useWorkspaces = () => {
   });
 };
 
+
+export const useWorkspace = (workspaceId) => {
+  return useQuery({
+    queryKey: ['workspace', workspaceId],
+    queryFn: () => fetchClient(`/workspaces/${workspaceId}`),
+    enabled: !!workspaceId,
+  });
+};
+
 export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -31,6 +40,9 @@ export const useInviteMember = (workspaceId) => {
   return useMutation({
     mutationFn: (data) =>
       fetchClient(`/workspaces/${workspaceId}/invite`, { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+    },
   });
 };

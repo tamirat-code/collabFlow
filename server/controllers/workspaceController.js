@@ -10,12 +10,11 @@ export const createWorkspace = async (req, res) => {
     members: [],
   });
 
- 
   await workspace.populate('owner', '_id name email avatar');
 
   res.status(201).json({
     ...workspace.toObject(),
-    myRole: 'admin', // creator is always admin
+    myRole: 'admin',
   });
 };
 
@@ -25,12 +24,13 @@ export const getMyWorkspaces = async (req, res) => {
       { owner: req.user.id },
       { 'members.user': req.user.id },
     ],
-  }).populate('owner', '_id name email avatar');
+  })
+    .populate('owner', '_id name email avatar')
+    .populate('members.user', 'name email avatar');
 
-  
   const result = workspaces.map((ws) => {
     const isOwner = ws.owner._id.toString() === req.user.id;
-    const member = ws.members.find((m) => m.user.toString() === req.user.id);
+    const member = ws.members.find((m) => m.user?._id?.toString() === req.user.id);
     return {
       ...ws.toObject(),
       myRole: isOwner ? 'admin' : member?.role || 'viewer',
@@ -41,10 +41,21 @@ export const getMyWorkspaces = async (req, res) => {
 };
 
 export const getWorkspace = async (req, res) => {
-  const workspace = await req.workspace.populate('members.user', 'name email avatar');
-  res.json(workspace);
-};
+  
+  const workspace = await Workspace.findById(req.workspace._id)
+    .populate('owner', '_id name email avatar')
+    .populate('members.user', 'name email avatar');
 
+  if (!workspace) return res.status(404).json({ message: 'Workspace not found' });
+
+  const isOwner = workspace.owner._id.toString() === req.user.id;
+  const member = workspace.members.find((m) => m.user?._id?.toString() === req.user.id);
+
+  res.json({
+    ...workspace.toObject(),
+    myRole: isOwner ? 'admin' : member?.role || 'viewer',
+  });
+};
 
 export const inviteMember = async (req, res) => {
   const { email, role = 'member' } = req.body;
@@ -58,9 +69,13 @@ export const inviteMember = async (req, res) => {
   req.workspace.members.push({ user: user._id, role });
   await req.workspace.save();
 
-  res.json({ message: 'Member added', workspace: req.workspace });
-};
+ 
+  const updated = await Workspace.findById(req.workspace._id)
+    .populate('owner', '_id name email avatar')
+    .populate('members.user', 'name email avatar');
 
+  res.json({ message: 'Member added', workspace: updated });
+};
 
 export const removeMember = async (req, res) => {
   req.workspace.members = req.workspace.members.filter(
@@ -69,7 +84,6 @@ export const removeMember = async (req, res) => {
   await req.workspace.save();
   res.json({ message: 'Member removed' });
 };
-
 
 export const deleteWorkspace = async (req, res) => {
   if (req.workspace.owner.toString() !== req.user.id) {

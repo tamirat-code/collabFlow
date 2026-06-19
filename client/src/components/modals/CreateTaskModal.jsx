@@ -2,13 +2,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useCreateTask } from '../../hooks/useTasks';
-import { useWorkspaces } from '../../hooks/useWorkspaces';
+import { useWorkspace } from '../../hooks/useWorkspaces';
 import { taskSchema } from '../../lib/validationSchemas';
 import M from '../../styles/ModalStyles';
 
 export default function CreateTaskModal({ workspaceId, projectId, defaultStatus = 'todo', onClose }) {
   const { mutate, isPending, error } = useCreateTask(workspaceId, projectId);
-  const { data: workspace } = useWorkspaces(workspaceId);
+  const { data: workspace } = useWorkspace(workspaceId);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(taskSchema),
@@ -77,7 +77,7 @@ export default function CreateTaskModal({ workspaceId, projectId, defaultStatus 
             <label style={M.label}>Assign to</label>
             <select {...register('assignee')} style={M.input} defaultValue="">
               <option value="">Unassigned</option>
-              {workspace?.members?.map((m) => (
+              {workspace?.members?.filter((m) => m.user != null).map((m) => (
                 <option key={m.user._id} value={m.user._id}>
                   {m.user.name}
                 </option>
