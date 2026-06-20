@@ -62,3 +62,48 @@ export const useLogout = () => {
     },
   });
 };
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      fetchClient('/auth/me', { method: 'PUT', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
+};
+
+export const useUploadAvatar = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file) => {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      return fetchClient('/auth/me/avatar', { method: 'POST', body: formData });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data) =>
+      fetchClient('/auth/me/password', { method: 'PUT', body: JSON.stringify(data) }),
+  });
+};
+
+export const useDeleteAccount = () => {
+  const logout = useAuthStore((s) => s.logout);
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (password) =>
+      fetchClient('/auth/me', { method: 'DELETE', body: JSON.stringify({ password }) }),
+    onSuccess: () => {
+      logout();
+      queryClient.clear();
+    },
+  });
+};

@@ -1,10 +1,12 @@
 import express from 'express';
 import passport from 'passport';
 import { verifyEmail,
-  resendVerificationEmail,register, login, refresh, logout, getMe ,forgotPassword, resetPassword} from '../controllers/authController.js';
+  resendVerificationEmail,register, login, refresh, logout, getMe ,forgotPassword, resetPassword,
+  updateProfile, uploadAvatarHandler, changePassword, deleteAccount } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { generateAccessToken, generateRefreshToken, setRefreshTokenCookie } from '../utils/generateToken.js'; // ← was missing
 import { requireRole } from '../middleware/roleMiddleware.js';
+import { uploadAvatar } from '../config/avatarUpload.js';
 
 const router = express.Router();
 
@@ -19,6 +21,12 @@ router.post('/login', login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
+
+
+router.put('/me',               protect, updateProfile);
+router.post('/me/avatar',       protect, uploadAvatar.single('avatar'), uploadAvatarHandler);
+router.put('/me/password',      protect, changePassword);
+router.delete('/me',            protect, deleteAccount);
 
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })

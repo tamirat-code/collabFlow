@@ -19,7 +19,11 @@ export default function KanbanColumn({ status, tasks, workspaceId, projectId }) 
   const config = columnConfig[status];
 
   return (
+<<<<<<< HEAD
     <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column' }}>
+=======
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+>>>>>>> 70fbf517 (feat: added profile settings features)
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

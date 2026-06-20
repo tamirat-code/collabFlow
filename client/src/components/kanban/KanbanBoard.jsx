@@ -70,12 +70,17 @@ export default function KanbanBoard({ workspaceId, projectId }) {
     >
      {/* columns wrapper — vertical stack on mobile, horizontal scroll on desktop */}
 <div
+<<<<<<< HEAD
   className="flex flex-col gap-4 md:flex-row md:overflow-x-auto md:pb-4"
+=======
+  className="flex flex-col gap-4 md:flex-row md:items-start md:overflow-x-auto md:pb-4"
+>>>>>>> 70fbf517 (feat: added profile settings features)
   style={{ WebkitOverflowScrolling: 'touch' }}
 >
   {STATUSES.map((status) => (
     <div
       key={status}
+<<<<<<< HEAD
       className="w-full md:flex-none"
       style={{
         minWidth: 0,
@@ -89,6 +94,16 @@ export default function KanbanBoard({ workspaceId, projectId }) {
           projectId={projectId}
         />
       </div>
+=======
+      className="w-full md:w-[280px] md:flex-shrink-0"
+    >
+      <KanbanColumn
+        status={status}
+        tasks={tasksByStatus(status)}
+        workspaceId={workspaceId}
+        projectId={projectId}
+      />
+>>>>>>> 70fbf517 (feat: added profile settings features)
     </div>
   ))}
 </div>
