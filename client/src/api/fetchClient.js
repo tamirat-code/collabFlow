@@ -2,7 +2,16 @@ import useAuthStore from '../store/authStore';
 
 const BASE_URL = 'http://localhost:5000/api';
 
-const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/google'];
+const AUTH_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh',
+  '/auth/google',
+  '/auth/resend-verification',
+  '/auth/verify-email',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
 
 const tryRefresh = async () => {
   try {

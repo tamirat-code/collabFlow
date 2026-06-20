@@ -36,8 +36,8 @@ export default function AuthPage() {
     login(data, { 
       onSuccess: () => navigate('/dashboard'),
       onError: (error) => {
-        if (error.response?.data?.needsVerification) {
-          setUnverifiedEmail(error.response.data.email);
+        if (error.data?.needsVerification) {
+          setUnverifiedEmail(error.data.email);
         }
       }
     });

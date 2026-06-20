@@ -14,8 +14,11 @@ const useAuthStore = create(
       setAccessToken: (accessToken) =>
         set({ accessToken }),
 
-      logout: () =>
-        set({ user: null, accessToken: null, isAuthenticated: false }),
+      logout: () => {
+        set({ user: null, accessToken: null, isAuthenticated: false });
+        
+        localStorage.removeItem('workspace-storage');
+      },
     }),
     {
       name: 'auth-storage',

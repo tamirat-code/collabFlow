@@ -131,19 +131,25 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (!user || !(await user.comparePassword(password)))
-    return res.status(401).json({ message: 'Invalid credentials' });
 
-  if (!user.isEmailVerified) {
-    return res.status(403).json({ 
-      message: 'Please verify your email first',
-      needsVerification: true,
-      email: user.email
-    });
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid credentials' });
   }
 
   if (!user.password) {
     return res.status(401).json({ message: 'This account uses Google sign-in. Please continue with Google.' });
+  }
+
+  if (!(await user.comparePassword(password))) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  if (!user.isEmailVerified) {
+    return res.status(403).json({
+      message: 'Please verify your email first',
+      needsVerification: true,
+      email: user.email
+    });
   }
 
   const accessToken = generateAccessToken(user._id);

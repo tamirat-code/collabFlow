@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus ,Zap,X} from 'lucide-react';
 import { useWorkspaces, useCreateWorkspace, useInviteMember } from '../hooks/useWorkspaces';
@@ -49,9 +49,17 @@ export default function Sidebar({ onClose }) {
   const [showCreateProj, setShowCreateProj] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
 
-  if (!activeWorkspaceId && workspaces?.length > 0) {
-    setActiveWorkspace(workspaces[0]._id);
-  }
+  useEffect(() => {
+    if (!workspaces) return;
+    const stillValid = workspaces.some((w) => w._id === activeWorkspaceId);
+
+    if (activeWorkspaceId && !stillValid) {
+      // Stale workspace ID from a previous account/session — reset it
+      setActiveWorkspace(workspaces.length > 0 ? workspaces[0]._id : null);
+    } else if (!activeWorkspaceId && workspaces.length > 0) {
+      setActiveWorkspace(workspaces[0]._id);
+    }
+  }, [activeWorkspaceId, workspaces]);
 
   const activeWorkspace = workspaces?.find((w) => w._id === activeWorkspaceId);
 

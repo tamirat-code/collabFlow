@@ -68,36 +68,27 @@ export default function KanbanBoard({ workspaceId, projectId }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-     {/* columns wrapper */}
+     {/* columns wrapper — vertical stack on mobile, horizontal scroll on desktop */}
 <div
-  style={{
-    display: 'flex',
-    gap: '1rem',
-    overflowX: 'auto',
-    paddingBottom: '1rem',
-    WebkitOverflowScrolling: 'touch',
-    scrollSnapType: 'x mandatory',
-  }}
+  className="flex flex-col gap-4 md:flex-row md:overflow-x-auto md:pb-4"
+  style={{ WebkitOverflowScrolling: 'touch' }}
 >
   {STATUSES.map((status) => (
     <div
       key={status}
+      className="w-full md:flex-none"
       style={{
-        minWidth: '280px',
-        flex: '0 0 280px',
-        scrollSnapAlign: 'start',
-       
-        width: 'min(280px, 85vw)',
-        minWidth: 'min(280px, 85vw)',
-        flex: `0 0 min(280px, 85vw)`,
+        minWidth: 0,
       }}
     >
-      <KanbanColumn
-        status={status}
-        tasks={tasksByStatus(status)}
-        workspaceId={workspaceId}
-        projectId={projectId}
-      />
+      <div className="md:w-[280px]">
+        <KanbanColumn
+          status={status}
+          tasks={tasksByStatus(status)}
+          workspaceId={workspaceId}
+          projectId={projectId}
+        />
+      </div>
     </div>
   ))}
 </div>

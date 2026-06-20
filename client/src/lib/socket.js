@@ -2,6 +2,7 @@ import { io } from 'socket.io-client';
 import useAuthStore from '../store/authStore';
 
 let socket = null;
+let isConnecting = false;
 
 export const getSocket = () => {
   if (socket) return socket;
@@ -13,15 +14,24 @@ export const getSocket = () => {
     autoConnect: false,
   });
 
+
+  socket.on('connect', () => { isConnecting = false; });
+  socket.on('connect_error', () => { isConnecting = false; });
+  socket.on('disconnect', () => { isConnecting = false; });
+
   return socket;
 };
 
 export const connectSocket = () => {
   const s = getSocket();
-  if (!s.connected) {
+
+
+  if (!s.connected && !isConnecting) {
+    isConnecting = true;
     s.auth.token = useAuthStore.getState().accessToken;
     s.connect();
   }
+
   return s;
 };
 

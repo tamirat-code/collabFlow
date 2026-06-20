@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -38,6 +37,7 @@ passport.use(new GoogleStrategy({
         name:     profile.displayName,
         email:    profile.emails[0].value,
         avatar:   profile.photos[0].value,
+        isEmailVerified: true, // Google has already verified this email
       });
       console.log('Created new user:', user); 
 

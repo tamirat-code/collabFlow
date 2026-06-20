@@ -7,18 +7,8 @@ import useAuthStore from '../store/authStore';
 
 export const useRealtimeTasks = (projectId) => {
   const queryClient = useQueryClient();
-const addToast = useToastStore.getState().addToast;
-const currentUserId = useAuthStore.getState().user?.id;
-
-const handleCreated = (task) => {
-  queryClient.setQueryData(['tasks', projectId], (old = []) => {
-    if (old.some((t) => t._id === task._id)) return old;
-    return [...old, task];
-  });
-  if (task.createdBy?._id !== currentUserId && task.createdBy !== currentUserId) {
-    addToast(`New task added: ${task.title}`);
-  }
-};
+  const addToast = useToastStore.getState().addToast;
+  const currentUserId = useAuthStore.getState().user?.id;
 
   useEffect(() => {
     if (!projectId) return;
@@ -31,6 +21,9 @@ const handleCreated = (task) => {
         if (old.some((t) => t._id === task._id)) return old;
         return [...old, task];
       });
+      if (task.createdBy?._id !== currentUserId && task.createdBy !== currentUserId) {
+        addToast(`New task added: ${task.title}`);
+      }
     };
 
     const handleUpdated = (task) => {

@@ -28,8 +28,8 @@ export default function Dashboard() {
   className={`
     fixed md:relative z-30 h-full
     transition-transform duration-300 ease-in-out
-    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
     md:translate-x-0
+    ${sidebarOpen ? 'translate-x-0' : 'max-md:-translate-x-full'}
   `}
 >
   <Sidebar onClose={() => setSidebarOpen(false)} />
