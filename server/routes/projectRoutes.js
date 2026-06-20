@@ -6,6 +6,7 @@ import { createTask, getTasks, updateTask, moveTask, deleteTask } from '../contr
 import { getComments, addComment, deleteComment, getActivity } from '../controllers/commentController.js';
 import { getAttachments, uploadAttachment, deleteAttachment } from '../controllers/attachmentController.js';
 import {upload} from '../config/Cloudinary.js';
+import multer from 'multer';
 const router = express.Router({ mergeParams: true });
 
 
@@ -34,7 +35,15 @@ router.get('/:projectId/tasks/:taskId/activity',               getActivity);
 router.use('/:projectId/tasks/:taskId/attachments', requirePlan('pro', 'business'));
 
 router.get('/:projectId/tasks/:taskId/attachments',                    getAttachments);
-router.post('/:projectId/tasks/:taskId/attachments', upload.single('file'), uploadAttachment);
+router.post('/:projectId/tasks/:taskId/attachments', upload.single('file'), (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ message: err.message });
+  }
+  if (err) {
+    return res.status(400).json({ message: err.message });
+  }
+  next();
+}, uploadAttachment);
 router.delete('/:projectId/tasks/:taskId/attachments/:attachmentId',   deleteAttachment);
 
 

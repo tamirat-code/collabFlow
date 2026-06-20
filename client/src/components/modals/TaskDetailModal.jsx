@@ -6,6 +6,7 @@ import { useAttachments, useUploadAttachment, useDeleteAttachment } from '../../
 import { useMe } from '../../hooks/useAuth';
 import { useBillingInfo } from '../../hooks/useBilling';
 import useWorkspaceStore from '../../store/workspaceStore';
+import useToastStore from '../../store/toastStore';
 
 const M = {
   overlay:    { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '1rem' },
@@ -59,6 +60,14 @@ const statusColors = {
   'in-progress': { background: '#0a2535', color: '#00c8b4' },
   'done':        { background: '#052e1a', color: '#22c55e' },
 };
+
+const ALLOWED_EXTENSIONS = [
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf',
+  '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.zip',
+  '.mp3', '.wav', '.ogg', '.mp4', '.mov',
+];
+const ACCEPT_ATTR = ALLOWED_EXTENSIONS.join(',');
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 function formatTime(date) {
   const d = new Date(date);
@@ -135,7 +144,24 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
   };
 
   const handleFiles = (files) => {
-    Array.from(files).forEach(file => uploadAttachment(file));
+    const addToast = useToastStore.getState().addToast;
+
+    Array.from(files).forEach((file) => {
+      const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        addToast(`"${file.name}" isn't a supported file type.`);
+        return;
+      }
+      if (file.size > MAX_SIZE) {
+        addToast(`"${file.name}" is larger than 10MB.`);
+        return;
+      }
+
+      uploadAttachment(file, {
+        onError: () => addToast(`Couldn't upload "${file.name}". Try a different file.`),
+      });
+    });
   };
 
   const handleDrop = (e) => {
@@ -147,15 +173,15 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
   return (
     <div style={M.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={M.card}>
-        {/* Header */}
+        
         <div style={M.header}>
           <h2 style={M.title}>{task.title}</h2>
           <button style={M.closeBtn} onClick={onClose}><X size={18} /></button>
         </div>
 
-        {/* Body */}
+        
         <div style={M.body}>
-          {/* Meta */}
+       
           <div style={M.meta}>
             <span style={{ ...M.badge, ...priorityColors[task.priority] }}>{task.priority}</span>
             <span style={{ ...M.badge, ...statusColors[task.status] }}>{task.status}</span>
@@ -173,7 +199,7 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
 
           {task.description && <p style={M.desc}>{task.description}</p>}
 
-          {/* Tabs */}
+          
           <div style={M.tabs}>
             <button style={tab === 'comments'    ? M.tabActive : M.tab} onClick={() => setTab('comments')}>
               <MessageSquare size={13} /> Comments {isPro && comments.length > 0 && `(${comments.length})`}
@@ -186,10 +212,10 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
             </button>
           </div>
 
-          {/* Free plan gate */}
+       
           {!isPro && <UpgradePrompt onClose={onClose} />}
 
-          {/* Comments */}
+         
           {isPro && tab === 'comments' && (
             <>
               {loadingComments && <p style={M.empty}>Loading...</p>}
@@ -214,10 +240,10 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
             </>
           )}
 
-          {/* Attachments */}
+         
           {isPro && tab === 'attachments' && (
             <>
-              {/* Drop zone */}
+             
               <div
                 style={{ ...M.dropZone, borderColor: dragging ? '#00c8b4' : '#0e3347' }}
                 onClick={() => fileRef.current.click()}
@@ -227,13 +253,14 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
               >
                 <Upload size={22} color={dragging ? '#00c8b4' : '#3a7080'} />
                 <p style={M.dropText}>{uploading ? 'Uploading...' : 'Click or drag files here'}</p>
-                <p style={M.dropSub}>Max 10MB · Images, PDFs, Docs, Zip</p>
+                <p style={M.dropSub}>Max 10MB · Images, PDFs, Docs, Audio, Video, Zip</p>
                 <input
                   ref={fileRef}
                   type="file"
                   multiple
+                  accept={ACCEPT_ATTR}
                   style={{ display: 'none' }}
-                  onChange={(e) => handleFiles(e.target.files)}
+                  onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
                 />
               </div>
 
@@ -256,7 +283,7 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
             </>
           )}
 
-          {/* Activity */}
+        
           {isPro && tab === 'activity' && (
             <>
               {loadingActivity && <p style={M.empty}>Loading...</p>}
@@ -278,7 +305,7 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
           )}
         </div>
 
-        {/* Comment input */}
+        
         {isPro && tab === 'comments' && (
           <div style={M.inputWrap}>
             <textarea

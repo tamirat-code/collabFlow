@@ -29,10 +29,10 @@ const tryRefresh = async () => {
     return null;
   }
 };
-
 export const fetchClient = async (endpoint, options = {}) => {
   let accessToken = useAuthStore.getState().accessToken;
   const isAuthEndpoint = AUTH_ENDPOINTS.some((e) => endpoint.startsWith(e));
+  const isFormData = options.body instanceof FormData;
 
   if (!accessToken && !options._retry && !isAuthEndpoint) {
     accessToken = await tryRefresh();
@@ -43,10 +43,7 @@ export const fetchClient = async (endpoint, options = {}) => {
     }
   }
 
-  const isFormData = options.body instanceof FormData;
-
   const headers = {
-    
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
@@ -59,6 +56,17 @@ export const fetchClient = async (endpoint, options = {}) => {
   });
 
   if (res.status === 401 && !options._retry && !isAuthEndpoint) {
+    
+    if (isFormData) {
+      const newToken = await tryRefresh();
+      if (!newToken) {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+        return;
+      }
+      throw new Error('Session refreshed — please try uploading again.');
+    }
+
     const newToken = await tryRefresh();
     if (newToken) {
       return fetchClient(endpoint, {

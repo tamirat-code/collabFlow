@@ -10,17 +10,16 @@ export const useAttachments = (workspaceId, projectId, taskId) =>
     queryFn: () => fetchClient(base(workspaceId, projectId, taskId)),
     enabled: !!taskId,
   });
-
 export const useUploadAttachment = (workspaceId, projectId, taskId) => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (file) => {
+    mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file);
       return fetchClient(base(workspaceId, projectId, taskId), {
         method: 'POST',
         body: formData,
-        
+        _noRetry: true, 
       });
     },
     onSuccess: () => {
@@ -29,7 +28,6 @@ export const useUploadAttachment = (workspaceId, projectId, taskId) => {
     },
   });
 };
-
 export const useDeleteAttachment = (workspaceId, projectId, taskId) => {
   const qc = useQueryClient();
   return useMutation({

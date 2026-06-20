@@ -9,11 +9,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
 export const getResourceType = (mimetype = '') => {
   if (mimetype.startsWith('image/')) return 'image';
   if (mimetype.startsWith('video/')) return 'video';
-  return 'raw'; // PDFs, docs, zip, txt etc.
+  return 'raw';
 };
 
 const storage = new CloudinaryStorage({
@@ -24,24 +23,43 @@ const storage = new CloudinaryStorage({
     return {
       folder: 'collabflow/tasks',
       resource_type: getResourceType(file.mimetype),
-      public_id: safeName, // safe ASCII-only ID, no original filename
+      public_id: safeName,
       format: ext || undefined,
     };
   },
 });
 
+const ALLOWED_MIMES = [
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'text/plain', 'application/zip', 'application/octet-stream',
+  'audio/mpeg', 'audio/wav', 'audio/ogg',
+  'video/mp4', 'video/quicktime', 
+];
+
+const ALLOWED_EXTENSIONS = [
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf',
+  '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.zip',
+  '.mp3', '.wav', '.ogg', '.mp4', '.mov',
+];
+
 export const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp',
-      'application/pdf', 'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain', 'application/zip'];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error(`File type ${file.mimetype} not allowed`));
+    const ext = path.extname(file.originalname).toLowerCase();
+
+    if (ALLOWED_MIMES.includes(file.mimetype) || ALLOWED_EXTENSIONS.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type not allowed: ${file.mimetype || ext}`));
+    }
   },
 });
 
