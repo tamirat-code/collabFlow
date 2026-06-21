@@ -42,9 +42,10 @@ export const useMarkAllAsRead = () => {
 
 export const useNotificationSocket = () => {
   const queryClient = useQueryClient();
-  const addToast = useToastStore.getState().addToast;
 
   useEffect(() => {
+    // Read addToast inside effect — always fresh, no stale closure
+    const addToast = useToastStore.getState().addToast;
     const socket = connectSocket();
 
     const handleNew = (notification) => {
@@ -60,4 +61,3 @@ export const useNotificationSocket = () => {
     };
   }, [queryClient]);
 };
-

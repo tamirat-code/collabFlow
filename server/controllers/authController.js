@@ -160,7 +160,7 @@ export const login = async (req, res) => {
     });
   }
 
-  const accessToken = generateAccessToken(user._id);
+  const accessToken = generateAccessToken(user._id,user.role);
   const refreshToken = generateRefreshToken(user._id);
   setRefreshTokenCookie(res, refreshToken);
 

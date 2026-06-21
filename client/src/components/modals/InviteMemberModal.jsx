@@ -3,8 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useInviteMember } from '../../hooks/useWorkspaces';
 import { inviteSchema } from '../../lib/validationSchemas';
-import M from '../../styles/ModalStyles' ;
-
+import M from '../../styles/ModalStyles';
 
 export default function InviteMemberModal({ workspaceId, onClose }) {
   const { mutate, isPending, error, isSuccess } = useInviteMember(workspaceId);
@@ -26,7 +25,7 @@ export default function InviteMemberModal({ workspaceId, onClose }) {
           <button style={M.closeBtn} onClick={onClose}><X size={18} /></button>
         </div>
 
-        {error && <div style={M.errBox}>{error.message}</div>}
+        {error   && <div style={M.errBox}>{error.message}</div>}
         {isSuccess && <div style={M.successBox}>Member added successfully</div>}
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -43,10 +42,11 @@ export default function InviteMemberModal({ workspaceId, onClose }) {
 
           <div style={{ marginBottom: '0.5rem' }}>
             <label style={M.label}>Role</label>
+            {/* member is first so it's the visual default — matches defaultValues */}
             <select {...register('role')} style={M.input}>
-              <option value="admin">Admin</option>
               <option value="member">Member</option>
               <option value="viewer">Viewer</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
 
