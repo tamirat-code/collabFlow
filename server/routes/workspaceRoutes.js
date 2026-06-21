@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import { checkWorkspaceAccess, requireWorkspaceRole } from '../middleware/workspaceMiddleware.js';
-import { enforceMemberLimit, enforceProjectLimit } from '../middleware/planMiddleware.js';
+import { enforceMemberLimit } from '../middleware/planMiddleware.js';
 import {
   createWorkspace, getMyWorkspaces, getWorkspace,
   inviteMember, removeMember, deleteWorkspace,
@@ -20,6 +20,6 @@ router.post  ('/:workspaceId/invite',             checkWorkspaceAccess, requireW
 router.delete('/:workspaceId/members/:userId',    checkWorkspaceAccess, requireWorkspaceRole('admin'), removeMember);
 router.delete('/:workspaceId',                    checkWorkspaceAccess, deleteWorkspace);
 
-router.use('/:workspaceId/projects', checkWorkspaceAccess, enforceProjectLimit, projectRoutes);
+router.use('/:workspaceId/projects', checkWorkspaceAccess, projectRoutes);
 
 export default router;

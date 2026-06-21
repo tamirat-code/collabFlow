@@ -1,13 +1,21 @@
 import User from '../models/User.js';
+import Workspace from '../models/Workspace.js';
+import Project from '../models/Project.js';
+import Task from '../models/Task.js';
+import Comment from '../models/Comment.js';
+import Activity from '../models/Activity.js';
+import Attachment from '../models/Attachment.js';
+import Notification from '../models/Notification.js';
 import { generateAccessToken, generateRefreshToken, setRefreshTokenCookie } from '../utils/generateToken.js';
 import jwt from 'jsonwebtoken';
 
 import { sendEmail } from '../utils/sendEmail.js';
 import crypto from 'crypto';
+import { avatarCloudinary } from '../config/avatarUpload.js';
 
 
 
-  import { welcomeEmailTemplate,emailVerificationTemplate,passwordResetTemplate, resendVerificationTemplate } from '../utils/emailTemplates.js';
+  import { welcomeEmailTemplate,emailVerificationTemplate,passwordResetTemplate, resendVerificationTemplate, goodbyeEmailTemplate } from '../utils/emailTemplates.js';
 
 
 export const forgotPassword = async (req, res) => {
@@ -173,7 +181,11 @@ export const refresh = async (req, res) => {
 
 
 export const logout = (req, res) => {
-  res.clearCookie('refreshToken');
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
   res.json({ message: 'Logged out' });
 };
 
@@ -181,4 +193,142 @@ export const logout = (req, res) => {
 export const getMe = async (req, res) => {
   const user = await User.findById(req.user.id).select('-password');
   res.json(user);
+};
+
+
+export const updateProfile = async (req, res) => {
+  const { name } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ message: 'Name is required' });
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name: name.trim() },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  res.json(user);
+};
+
+
+export const uploadAvatarHandler = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  if (user.avatar?.includes('res.cloudinary.com') && user.avatarPublicId) {
+    try {
+      await avatarCloudinary.uploader.destroy(user.avatarPublicId);
+    } catch (err) {
+      console.error('Failed to remove old avatar from Cloudinary:', err.message);
+    }
+  }
+
+  user.avatar = req.file.path;
+  user.avatarPublicId = req.file.filename;
+  await user.save();
+
+  const safeUser = await User.findById(user._id).select('-password');
+  res.json(safeUser);
+};
+
+
+export const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters' });
+  }
+
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  if (user.password) {
+    if (!currentPassword) {
+      return res.status(400).json({ message: 'Current password is required' });
+    }
+    const matches = await user.comparePassword(currentPassword);
+    if (!matches) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  res.json({ message: 'Password updated successfully' });
+};
+
+
+export const deleteAccount = async (req, res) => {
+  const { password } = req.body;
+
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  if (user.password) {
+    if (!password) {
+      return res.status(400).json({ message: 'Password confirmation is required' });
+    }
+    const matches = await user.comparePassword(password);
+    if (!matches) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+  }
+
+  const ownedWorkspaces = await Workspace.find({ owner: user._id });
+
+  for (const workspace of ownedWorkspaces) {
+    const projects = await Project.find({ workspace: workspace._id });
+    const projectIds = projects.map((p) => p._id);
+
+    const tasks = await Task.find({ project: { $in: projectIds } });
+    const taskIds = tasks.map((t) => t._id);
+
+    await Comment.deleteMany({ task: { $in: taskIds } });
+    await Activity.deleteMany({ task: { $in: taskIds } });
+    await Attachment.deleteMany({ task: { $in: taskIds } });
+    await Task.deleteMany({ project: { $in: projectIds } });
+    await Project.deleteMany({ workspace: workspace._id });
+    await Workspace.findByIdAndDelete(workspace._id);
+  }
+
+  await Workspace.updateMany(
+    { 'members.user': user._id },
+    { $pull: { members: { user: user._id } } }
+  );
+
+  await Notification.deleteMany({ $or: [{ recipient: user._id }, { sender: user._id }] });
+
+  if (user.avatar?.includes('res.cloudinary.com') && user.avatarPublicId) {
+    try {
+      await avatarCloudinary.uploader.destroy(user.avatarPublicId);
+    } catch (err) {
+      console.error('Failed to remove avatar during account deletion:', err.message);
+    }
+  }
+
+  const userEmail = user.email;
+  const userName = user.name;
+
+  await User.findByIdAndDelete(user._id);
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  sendEmail({
+    to: userEmail,
+    subject: 'Your CollabFlow account has been deleted',
+    html: goodbyeEmailTemplate(userName),
+  }).catch((err) => console.error('Goodbye email failed:', err.message));
+
+  res.json({ message: 'Account deleted successfully' });
 };

@@ -173,14 +173,20 @@ export default function Sidebar({ onClose }) {
 
       <div style={S.footer}>
         <div style={S.userRow}>
-          {user?.avatar ? (
-            <img src={user.avatar} style={{ ...S.avatar, objectFit: 'cover' }} alt="" />
-          ) : (
-            <div style={S.avatar}>{user?.name?.[0]?.toUpperCase()}</div>
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={S.userName}>{user?.name}</p>
-            <p style={S.userRole}>{user?.role}</p>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, cursor: 'pointer' }}
+            onClick={() => navigate('/dashboard/profile')}
+            title="Profile & settings"
+          >
+            {user?.avatar ? (
+              <img src={user.avatar} style={{ ...S.avatar, objectFit: 'cover' }} alt="" />
+            ) : (
+              <div style={S.avatar}>{user?.name?.[0]?.toUpperCase()}</div>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={S.userName}>{user?.name}</p>
+              <p style={S.userRole}>{user?.role}</p>
+            </div>
           </div>
           <NotificationBell />
           <button style={S.iconBtn} onClick={handleLogout} title="Logout">

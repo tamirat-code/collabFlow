@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, minlength: 6 },
   googleId: { type: String, unique: true, sparse: true },
   avatar:   { type: String, default: '' },
+  avatarPublicId: { type: String, default: '' },
   role:     { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
   resetPasswordToken:   { type: String },
   resetPasswordExpires: { type: Date },

@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Billing from './pages/Billing';
+import Profile from './pages/Profile';
 import VerifyEmail from './pages/VerifyEmail';
 import ResendVerification from './pages/ResendVerification';
 import ToastContainer from './components/ToastContainer';
@@ -26,8 +27,9 @@ export default function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard"  element={<Dashboard />} />
-          <Route path="/billing"    element={<Billing />} />
+          <Route path="/dashboard"          element={<Dashboard />} />
+          <Route path="/dashboard/profile"  element={<Profile />} />
+          <Route path="/billing"            element={<Billing />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
