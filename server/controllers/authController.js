@@ -192,7 +192,8 @@ export const logout = (req, res) => {
 
 export const getMe = async (req, res) => {
   const user = await User.findById(req.user.id).select('-password');
-  res.json(user);
+  const hasPassword = await User.findById(req.user.id).select('password').then(u => !!u?.password);
+  res.json({ ...user.toObject(), hasPassword });
 };
 
 
