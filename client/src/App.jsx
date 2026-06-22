@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -10,13 +10,16 @@ import Billing from './pages/Billing';
 import Profile from './pages/Profile';
 import VerifyEmail from './pages/VerifyEmail';
 import ResendVerification from './pages/ResendVerification';
+import NotFound from './pages/NotFound';
 import ToastContainer from './components/ToastContainer';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ToastContainer />
-      <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ToastContainer />
+        <Routes>
         <Route path="/"                     element={<Home />} />
         <Route path="/login"                element={<Login />} />
         <Route path="/verify-email/:token"  element={<VerifyEmail />} />
@@ -32,8 +35,9 @@ export default function App() {
           <Route path="/billing"            element={<Billing />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+        <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

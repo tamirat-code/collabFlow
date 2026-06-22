@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import User from '../models/User.js';
 import Workspace from '../models/Workspace.js';
 import { getPlanLimits } from '../utils/planLimits.js';
 
@@ -12,26 +13,31 @@ const PRICES = {
 export const getBillingStatus = async (req, res) => {
   const workspace = req.workspace;
   res.json({
-    plan: workspace.plan,
+    plan:                   workspace.plan,
     stripeCurrentPeriodEnd: workspace.stripeCurrentPeriodEnd,
-    stripeSubscriptionId: workspace.stripeSubscriptionId,
-    limits: getPlanLimits(workspace.plan),
+    stripeSubscriptionId:   workspace.stripeSubscriptionId,
+    limits:                 getPlanLimits(workspace.plan),
   });
 };
 
 export const createCheckoutSession = async (req, res) => {
   const { plan } = req.body;
+
   const workspace = req.workspace;
 
   if (!workspace) return res.status(400).json({ message: 'Workspace not found. Please select a workspace.' });
 
   const priceId = PRICES[plan];
-  if (!priceId) return res.status(400).json({ message: 'Invalid plan' });
+  if (!priceId) return res.status(400).json({ message: `Invalid plan "${plan}". Check STRIPE_PRICE_PRO / STRIPE_PRICE_BUSINESS env vars.` });
+
+  
+  const user = await User.findById(req.user.id).select('email');
+  if (!user) return res.status(404).json({ message: 'User not found' });
 
   let customerId = workspace.stripeCustomerId;
   if (!customerId) {
     const customer = await stripe.customers.create({
-      email: req.user.email,
+      email:    user.email,
       metadata: { workspaceId: workspace._id.toString() },
     });
     customerId = customer.id;
@@ -40,16 +46,14 @@ export const createCheckoutSession = async (req, res) => {
   }
 
   const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
+    customer:             customerId,
+    mode:                 'subscription',
     payment_method_types: ['card'],
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.CLIENT_URL}/billing?success=true`,
-    cancel_url:  `${process.env.CLIENT_URL}/billing`,
-    metadata: { workspaceId: workspace._id.toString(), plan },
-    subscription_data: {
-      metadata: { workspaceId: workspace._id.toString(), plan },
-    },
+    line_items:           [{ price: priceId, quantity: 1 }],
+    success_url:          `${process.env.CLIENT_URL}/billing?success=true`,
+    cancel_url:           `${process.env.CLIENT_URL}/billing`,
+    metadata:             { workspaceId: workspace._id.toString(), plan },
+    subscription_data:    { metadata: { workspaceId: workspace._id.toString(), plan } },
   });
 
   res.json({ url: session.url });
@@ -63,7 +67,7 @@ export const createPortalSession = async (req, res) => {
 
   try {
     const session = await stripe.billingPortal.sessions.create({
-      customer: workspace.stripeCustomerId,
+      customer:   workspace.stripeCustomerId,
       return_url: `${process.env.CLIENT_URL}/billing`,
     });
     res.json({ url: session.url });
@@ -83,7 +87,7 @@ export const handleWebhook = async (req, res) => {
     return res.status(400).json({ message: `Webhook error: ${err.message}` });
   }
 
-  // Always respond 200 immediately for webhook reliability
+  // Respond 200 immediately for webhook reliability before any async work
   res.json({ received: true });
 
   const obj = event.data.object;
@@ -92,13 +96,12 @@ export const handleWebhook = async (req, res) => {
     switch (event.type) {
 
       case 'checkout.session.completed': {
-        
         const fullSession = await stripe.checkout.sessions.retrieve(obj.id, {
           expand: ['subscription'],
         });
 
         const sub = fullSession.subscription;
-        if (!sub) break; 
+        if (!sub) break;
 
         const workspaceId = fullSession.metadata?.workspaceId;
         const plan        = fullSession.metadata?.plan;
@@ -143,6 +146,5 @@ export const handleWebhook = async (req, res) => {
     }
   } catch (err) {
     console.error('Webhook processing error:', err.message);
-    // Don't throw — response already sent
   }
 };

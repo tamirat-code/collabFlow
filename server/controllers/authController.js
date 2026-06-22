@@ -195,11 +195,13 @@ export const logout = (req, res) => {
 
 
 export const getMe = async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
-  const hasPassword = await User.findById(req.user.id).select('password').then(u => !!u?.password);
-  res.json({ ...user.toObject(), hasPassword });
+  const user = await User.findById(req.user.id).select('+password');
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const obj = user.toObject();
+  obj.hasPassword = !!obj.password;
+  delete obj.password;
+  res.json(obj);
 };
-
 
 export const updateProfile = async (req, res) => {
   const { name, phone, gender, dob } = req.body;
@@ -216,7 +218,7 @@ export const updateProfile = async (req, res) => {
       gender: gender || '',
       dob: dob || null,
     },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   ).select('-password');
 
   res.json(user);

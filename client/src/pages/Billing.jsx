@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Check, Zap, Building2, ArrowLeft, ExternalLink } from 'lucide-react';
-import { useBillingInfo, useCreateCheckout, usePortal } from '../hooks/useBilling';
+import { useBillingInfo, useBillingSuccessHandler, useCreateCheckout, usePortal } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
 
@@ -65,6 +65,7 @@ export default function Billing() {
   const { data: billing, isLoading } = useBillingInfo(activeWorkspaceId);
   const { mutate: checkout, isPending } = useCreateCheckout(activeWorkspaceId);
   const { mutate: portal, isPending: portalPending } = usePortal(activeWorkspaceId);
+  useBillingSuccessHandler(activeWorkspaceId);
   const [pendingPlan, setPendingPlan] = useState(null);
 
   const currentPlan = billing?.plan || 'free';

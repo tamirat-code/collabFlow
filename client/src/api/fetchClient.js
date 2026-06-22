@@ -8,17 +8,14 @@ const AUTH_ENDPOINTS = [
   '/auth/refresh',
   '/auth/google',
   '/auth/resend-verification',
-  '/auth/verify-email',
   '/auth/forgot-password',
   '/auth/reset-password',
+  '/auth/verify-email',
 ];
 
 const tryRefresh = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    const res = await fetch(`${BASE_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
     if (res.ok) {
       const { accessToken } = await res.json();
       useAuthStore.getState().setAccessToken(accessToken);
@@ -29,6 +26,7 @@ const tryRefresh = async () => {
     return null;
   }
 };
+
 export const fetchClient = async (endpoint, options = {}) => {
   let accessToken = useAuthStore.getState().accessToken;
   const isAuthEndpoint = AUTH_ENDPOINTS.some((e) => endpoint.startsWith(e));
@@ -44,6 +42,7 @@ export const fetchClient = async (endpoint, options = {}) => {
   }
 
   const headers = {
+    // Don't set Content-Type for FormData — browser sets it with the correct boundary
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
@@ -56,19 +55,9 @@ export const fetchClient = async (endpoint, options = {}) => {
   });
 
   if (res.status === 401 && !options._retry && !isAuthEndpoint) {
-    
-    if (isFormData) {
-      const newToken = await tryRefresh();
-      if (!newToken) {
-        useAuthStore.getState().logout();
-        window.location.href = '/login';
-        return;
-      }
-      throw new Error('Session refreshed — please try uploading again.');
-    }
-
     const newToken = await tryRefresh();
     if (newToken) {
+      // Retry the request with the new token — works for both JSON and FormData
       return fetchClient(endpoint, {
         ...options,
         _retry: true,
@@ -82,7 +71,9 @@ export const fetchClient = async (endpoint, options = {}) => {
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Something went wrong' }));
-    throw new Error(error.message || 'Something went wrong');
+    const err = new Error(error.message || 'Something went wrong');
+    err.data = error;
+    throw err;
   }
 
   return res.json();

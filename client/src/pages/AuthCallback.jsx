@@ -13,7 +13,6 @@ export default function AuthCallback() {
 
     if (!token) return navigate('/login?error=google_failed');
 
-    // Store token then fetch user
     useAuthStore.getState().setAccessToken(token);
 
     fetchClient('/auth/me')

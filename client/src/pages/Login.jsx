@@ -11,13 +11,13 @@ export default function AuthPage() {
   const location = useLocation();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accessToken = useAuthStore((s) => s.accessToken);
-
+const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
-    if (isAuthenticated && accessToken) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [isAuthenticated, accessToken]);
+  if (isAuthenticated && accessToken && user?.isEmailVerified !== false) {
+    navigate('/dashboard', { replace: true });
+  }
+}, [isAuthenticated, accessToken, user]);
 
   const [mode, setMode] = useState(location.state?.mode === 'register' ? 'register' : 'login');
   const [animating, setAnimating] = useState(false);

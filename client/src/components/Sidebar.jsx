@@ -41,7 +41,6 @@ export default function Sidebar({ onClose }) {
   const { data: workspaces, isLoading: loadingWs } = useWorkspaces();
   const { activeWorkspaceId, activeProjectId, setActiveWorkspace, setActiveProject } = useWorkspaceStore();
   const { data: projects, isLoading: loadingProjects } = useProjects(activeWorkspaceId);
-  const { mutate: logout } = useLogout();
   const { canEdit } = useWorkspaceRole();
 
   const [showWsDropdown, setShowWsDropdown] = useState(false);
@@ -63,8 +62,10 @@ export default function Sidebar({ onClose }) {
 
   const activeWorkspace = workspaces?.find((w) => w._id === activeWorkspaceId);
 
-  const handleLogout = () => {
-    logout(undefined, { onSuccess: () => navigate('/login') });
+  const { mutateAsync: logoutAsync } = useLogout();
+  const handleLogout = async () => {
+    try { await logoutAsync(); } catch {}
+    navigate('/login');
   };
 
   return (

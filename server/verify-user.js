@@ -5,11 +5,11 @@ async function verifyUser() {
   try {
     await mongoose.connect('mongodb://localhost:27017/collabflow');
     
-    // Find and verify the user
+    
     const user = await User.findOneAndUpdate(
       { email: 'testverify@example.com' },
       { isEmailVerified: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
     
     if (user) {
