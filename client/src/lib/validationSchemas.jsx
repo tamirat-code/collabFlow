@@ -6,15 +6,16 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
+  name:     z.string().min(2, 'Name must be at least 2 characters'),
+  email:    z.string().min(1, 'Email is required').email('Enter a valid email'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
     .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
     .regex(/[0-9]/, 'Must contain at least one number'),
+  phone:    z.string().optional(),
+  gender:   z.enum(['male', 'female', 'other', '']).optional(),
+  dob:      z.string().optional(),
 });
-
 export const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
 });

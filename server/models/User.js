@@ -10,10 +10,17 @@ const userSchema = new mongoose.Schema({
   avatar:   { type: String, default: '' },
   avatarPublicId: { type: String, default: '' },
   role:     { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
+
+  
+  phone:    { type: String, default: '' },
+  gender:   { type: String, enum: ['male', 'female', 'other', ''], default: '' },
+  dob:      { type: Date },
+
+
   resetPasswordToken:   { type: String },
   resetPasswordExpires: { type: Date },
-  isEmailVerified: { type: Boolean, default: false },
-  emailVerificationToken: { type: String },
+  isEmailVerified:      { type: Boolean, default: false },
+  emailVerificationToken:   { type: String },
   emailVerificationExpires: { type: Date },
 }, { timestamps: true });
 
@@ -29,29 +36,18 @@ userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-
 userSchema.methods.generateResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
-
-  this.resetPasswordToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-
-  this.resetPasswordExpires = Date.now() + 15 * 60 * 1000; 
-
-  return resetToken; 
+  this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+  return resetToken;
 };
+
 userSchema.methods.generateEmailVerificationToken = function () {
   const verificationToken = crypto.randomBytes(32).toString('hex');
-
-  this.emailVerificationToken = crypto
-    .createHash('sha256')
-    .update(verificationToken)
-    .digest('hex');
-
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-
+  this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
   return verificationToken;
 };
+
 export default mongoose.model('User', userSchema);

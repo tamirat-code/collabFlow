@@ -111,13 +111,18 @@ export const resendVerificationEmail = async (req, res) => {
   res.json({ message: 'Verification email sent. Please check your email.' });
 };
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone, gender, dob } = req.body;
+
   const exists = await User.findOne({ email });
   if (exists) return res.status(400).json({ message: 'Email already in use' });
 
-  const user = await User.create({ name, email, password });
-  
- 
+  const user = await User.create({
+    name, email, password,
+    phone: phone || '',
+    gender: gender || '',
+    dob: dob || null,
+  });
+
   const verificationToken = user.generateEmailVerificationToken();
   await user.save();
 
@@ -134,7 +139,6 @@ export const register = async (req, res) => {
     user: { id: user._id, name: user.name, email: user.email, isEmailVerified: user.isEmailVerified }
   });
 };
-
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
@@ -198,7 +202,7 @@ export const getMe = async (req, res) => {
 
 
 export const updateProfile = async (req, res) => {
-  const { name } = req.body;
+  const { name, phone, gender, dob } = req.body;
 
   if (!name || !name.trim()) {
     return res.status(400).json({ message: 'Name is required' });
@@ -206,13 +210,17 @@ export const updateProfile = async (req, res) => {
 
   const user = await User.findByIdAndUpdate(
     req.user.id,
-    { name: name.trim() },
+    {
+      name: name.trim(),
+      phone: phone || '',
+      gender: gender || '',
+      dob: dob || null,
+    },
     { new: true, runValidators: true }
   ).select('-password');
 
   res.json(user);
 };
-
 
 export const uploadAvatarHandler = async (req, res) => {
   if (!req.file) {

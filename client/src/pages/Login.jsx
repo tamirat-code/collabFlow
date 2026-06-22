@@ -136,7 +136,7 @@ export default function AuthPage() {
         <div
           className="absolute top-0 bottom-0 flex flex-col justify-center"
           style={{
-            zIndex: 2,
+            zIndex: 1,
             width: '56%',
             left: isLogin ? 0 : 'auto',
             right: isLogin ? 'auto' : 0,
@@ -145,6 +145,7 @@ export default function AuthPage() {
               ? 'polygon(0 0, 88% 0, 100% 100%, 0 100%)'
               : 'polygon(0 0, 100% 0, 100% 100%, 12% 100%)',
             padding: isLogin ? '2.5rem 3rem 2.5rem 2.5rem' : '2.5rem 2.5rem 2.5rem 3rem',
+            overflow:'auto',
           }}
         >
           <AnimatePresence mode="wait">
@@ -271,32 +272,102 @@ export default function AuthPage() {
                     )}
 
                     <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                      <Field
-                        registration={registerForm.register('name')}
-                        placeholder="Name"
-                        type="text"
-                        icon="&#128100;"
-                        error={registerForm.formState.errors.name?.message}
-                      />
-                      <Field
-                        registration={registerForm.register('email')}
-                        placeholder="Email"
-                        type="email"
-                        icon="&#9993;"
-                        error={registerForm.formState.errors.email?.message}
-                      />
-                      <Field
-                        registration={registerForm.register('password')}
-                        placeholder="password"
-                        type="password"
-                        icon="&#128274;"
-                        error={registerForm.formState.errors.password?.message}
-                      />
+  <Field
+    registration={registerForm.register('name')}
+    placeholder="Full name"
+    type="text"
+    icon="&#128100;"
+    error={registerForm.formState.errors.name?.message}
+  />
+  <Field
+    registration={registerForm.register('email')}
+    placeholder="Email"
+    type="email"
+    icon="&#9993;"
+    error={registerForm.formState.errors.email?.message}
+  />
+  <Field
+    registration={registerForm.register('password')}
+    placeholder="Password"
+    type="password"
+    icon="&#128274;"
+    error={registerForm.formState.errors.password?.message}
+  />
+  <Field
+    registration={registerForm.register('phone')}
+    placeholder="Phone number"
+    type="tel"
+    icon="&#128222;"
+    error={registerForm.formState.errors.phone?.message}
+  />
 
-                      <NeonButton type="submit" disabled={registerPending}>
-                        {registerPending ? 'Creating account...' : 'Sign up'}
-                      </NeonButton>
-                    </form>
+  <div style={{ position: 'relative', marginBottom: '1.1rem' }}>
+    <select
+      {...registerForm.register('gender')}
+      style={{
+        width: '100%',
+        background: 'transparent',
+        border: 'none',
+        borderBottom: '1px solid #1e5060',
+        padding: '7px 28px 7px 0',
+        color: registerForm.watch('gender') ? '#c0e8e4' : '#2e7080',
+        fontSize: '13px',
+        outline: 'none',
+        fontFamily: 'inherit',
+        appearance: 'none',
+      }}
+      onFocus={e => e.target.style.borderBottomColor = '#00c8b4'}
+      onBlur={e => e.target.style.borderBottomColor = '#1e5060'}
+    >
+      <option value="" disabled>Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+    <span style={{ position: 'absolute', right: '4px', top: '6px', color: '#2a6070', fontSize: '13px' }}>
+      &#9660;
+    </span>
+    {registerForm.formState.errors.gender && (
+      <p style={{ color: '#f87171', fontSize: '11px', marginTop: '3px' }}>
+        {registerForm.formState.errors.gender.message}
+      </p>
+    )}
+  </div>
+
+  {/* Date of birth */}
+  <div style={{ position: 'relative', marginBottom: '1.1rem' }}>
+    <input
+      {...registerForm.register('dob')}
+      type="date"
+      style={{
+        width: '100%',
+        background: 'transparent',
+        border: 'none',
+        borderBottom: '1px solid #1e5060',
+        padding: '7px 28px 7px 0',
+        color: '#c0e8e4',
+        fontSize: '13px',
+        outline: 'none',
+        fontFamily: 'inherit',
+        colorScheme: 'dark',
+      }}
+      onFocus={e => e.target.style.borderBottomColor = '#00c8b4'}
+      onBlur={e => e.target.style.borderBottomColor = '#1e5060'}
+    />
+    <span style={{ position: 'absolute', right: '4px', top: '6px', color: '#2a6070', fontSize: '13px' }}>
+      &#128197;
+    </span>
+    {registerForm.formState.errors.dob && (
+      <p style={{ color: '#f87171', fontSize: '11px', marginTop: '3px' }}>
+        {registerForm.formState.errors.dob.message}
+      </p>
+    )}
+  </div>
+
+  <NeonButton type="submit" disabled={registerPending}>
+    {registerPending ? 'Creating account...' : 'Sign up'}
+  </NeonButton>
+</form>
 
                     <GoogleBtn />
 
