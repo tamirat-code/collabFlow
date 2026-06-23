@@ -8,8 +8,15 @@ import './index.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        
+        if (error?.status >= 400 && error?.status < 500) return false;
+        return failureCount < 1;
+      },
       refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
     },
   },
 });

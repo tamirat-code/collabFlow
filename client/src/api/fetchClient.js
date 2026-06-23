@@ -42,7 +42,7 @@ export const fetchClient = async (endpoint, options = {}) => {
   }
 
   const headers = {
-    // Don't set Content-Type for FormData — browser sets it with the correct boundary
+    
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
@@ -57,7 +57,7 @@ export const fetchClient = async (endpoint, options = {}) => {
   if (res.status === 401 && !options._retry && !isAuthEndpoint) {
     const newToken = await tryRefresh();
     if (newToken) {
-      // Retry the request with the new token — works for both JSON and FormData
+      
       return fetchClient(endpoint, {
         ...options,
         _retry: true,
@@ -73,6 +73,7 @@ export const fetchClient = async (endpoint, options = {}) => {
     const error = await res.json().catch(() => ({ message: 'Something went wrong' }));
     const err = new Error(error.message || 'Something went wrong');
     err.data = error;
+    err.status = res.status;
     throw err;
   }
 

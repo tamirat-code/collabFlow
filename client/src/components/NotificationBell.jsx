@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, MessageSquare, UserPlus, CheckCheck } from 'lucide-react';
+import { Bell, MessageSquare, UserPlus, CheckCheck, Users } from 'lucide-react';
 import { useNotifications, useUnreadCount, useMarkAsRead, useMarkAllAsRead, useNotificationSocket } from '../hooks/useNotifications';
 
 const S = {
@@ -25,6 +25,7 @@ const typeIcon = (type) => {
   switch (type) {
     case 'comment':  return <MessageSquare size={12} color="#00c8b4" />;
     case 'assigned': return <UserPlus size={12} color="#f59e0b" />;
+    case 'invite':   return <Users size={12} color="#00c8b4" />;
     default:         return <Bell size={12} color="#3a7080" />;
   }
 };

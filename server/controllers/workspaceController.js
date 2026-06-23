@@ -1,5 +1,6 @@
 import Workspace from '../models/Workspace.js';
 import User from '../models/User.js';
+import { notifyWorkspaceInvite,notify } from '../utils/Notify.js';
 
 export const createWorkspace = async (req, res) => {
   const { name } = req.body;
@@ -56,24 +57,31 @@ export const getWorkspace = async (req, res) => {
     myRole: isOwner ? 'admin' : member?.role || 'viewer',
   });
 };
-
 export const inviteMember = async (req, res) => {
   const { email, role = 'member' } = req.body;
-
+ 
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: 'User with this email not found' });
-
+ 
   const alreadyMember = req.workspace.members.some(m => m.user.toString() === user._id.toString());
   if (alreadyMember) return res.status(400).json({ message: 'User already in workspace' });
-
+ 
   req.workspace.members.push({ user: user._id, role });
   await req.workspace.save();
-
+ 
+  notify({
+    recipientId: user._id,
+    senderId:    req.user.id,
+    type:        'member_added',
+    workspaceId: req.workspace._id,
+    message:     `You were added to workspace "${req.workspace.name}"`,
+  }).catch(console.error);
+ 
  
   const updated = await Workspace.findById(req.workspace._id)
     .populate('owner', '_id name email avatar')
     .populate('members.user', 'name email avatar');
-
+ 
   res.json({ message: 'Member added', workspace: updated });
 };
 

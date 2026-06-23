@@ -5,6 +5,7 @@ export const getNotifications = async (req, res) => {
     .populate('sender', 'name avatar')
     .populate('task', 'title')
     .populate('project', 'name')
+    .populate('workspace', 'name')
     .sort('-createdAt')
     .limit(30);
   res.json(notifications);
