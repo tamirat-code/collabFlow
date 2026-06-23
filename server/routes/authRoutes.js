@@ -22,7 +22,7 @@ router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
 
-// Profile & settings
+
 router.put('/me',               protect, updateProfile);
 router.post('/me/avatar',       protect, uploadAvatar.single('avatar'), uploadAvatarHandler);
 router.put('/me/password',      protect, changePassword);

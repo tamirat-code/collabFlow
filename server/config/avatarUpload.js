@@ -10,13 +10,24 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: async (req) => ({
-    folder: 'collabflow/avatars',
-    resource_type: 'image',
-    public_id: `user-${req.user.id}-${Date.now()}`,
-    transformation: [{ width: 256, height: 256, crop: 'fill', gravity: 'face' }],
-    format: 'jpg',
-  }),
+  params: async (req) => {
+    
+
+    return {
+      folder: 'collabflow/avatars',
+      resource_type: 'image',
+      public_id: `user-${req.user.id}-${Date.now()}`,
+      transformation: [
+        {
+          width: 256,
+          height: 256,
+          crop: 'fill',
+          gravity: 'face'
+        }
+      ],
+      format: 'jpg',
+    };
+  },
 });
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
