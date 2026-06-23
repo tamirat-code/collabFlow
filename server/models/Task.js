@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema({
   project:     { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true },
   assignee:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  order:       { type: Number, default: 0 }, // for drag-drop ordering
+  order:       { type: Number, default: 0 }, 
 }, { timestamps: true });
 
 export default mongoose.model('Task', taskSchema);

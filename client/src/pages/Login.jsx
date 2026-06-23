@@ -85,7 +85,7 @@ const user = useAuthStore((s) => s.user);
         className="relative w-full overflow-hidden rounded-2xl"
         style={{
           maxWidth: '800px',
-          height: '460px',
+          minHeight: '550px',
           border: '1.5px solid #00e5d1',
           boxShadow: '0 0 40px #00e5d130, 0 0 80px #00e5d110',
         }}
@@ -242,7 +242,7 @@ const user = useAuthStore((s) => s.user);
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.1, duration: 0.4, ease: 'easeOut' } }}
                 exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
               >
-                <h1 style={{ fontSize: '22px', fontWeight: 500, color: '#e0f5f2', marginBottom: '1.5rem' }}>
+                <h1 style={{ fontSize: '22px', fontWeight: 500, color: '#e0f5f2', marginBottom: '1.5rem', textAlign: 'center' }}>
                   sign Up
                 </h1>
 

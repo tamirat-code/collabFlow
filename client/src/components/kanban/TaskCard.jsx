@@ -56,7 +56,7 @@ export default function TaskCard({ task, workspaceId, projectId }) {
             </div>
           )}
 
-          {/* Clicking title opens detail modal */}
+          
           <p
             onClick={() => setShowDetail(true)}
             style={{ flex: 1, fontSize: '13px', fontWeight: 500, color: '#c0e8e4', lineHeight: 1.4, cursor: 'pointer' }}
@@ -90,14 +90,24 @@ export default function TaskCard({ task, workspaceId, projectId }) {
             {task.priority}
           </span>
 
-          {task.dueDate && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#3a7080' }}>
-              <Calendar size={11} />
-              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </span>
-          )}
+          {task.dueDate && (() => {
+            const due  = new Date(task.dueDate);
+            const now  = new Date();
+            const diff = (due - now) / (1000 * 60 * 60 * 24); // days
+            const dueDateColor =
+              task.status === 'done'     ? '#3a7080' :
+              diff < 0                   ? '#f87171' : // overdue — red
+              diff < 1                   ? '#f59e0b' : // due today — yellow
+                                           '#60a5fa';  // upcoming — blue
+            return (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: dueDateColor }}>
+                <Calendar size={11} />
+                {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            );
+          })()}
 
-          {/* Comment count indicator */}
+          
           <span
             onClick={() => setShowDetail(true)}
             style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '11px', color: '#2a6070', cursor: 'pointer', marginLeft: 'auto' }}

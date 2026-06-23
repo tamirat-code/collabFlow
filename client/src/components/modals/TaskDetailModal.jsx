@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
-import { X, Trash2, Send, MessageSquare, Activity, Paperclip, Upload, FileText, Image, Zap } from 'lucide-react';
+import { X, Trash2, Send, MessageSquare, Activity, Paperclip, Upload, FileText, Image, Zap, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useComments, useActivity, useAddComment, useDeleteComment } from '../../hooks/useComments';
+import { useUpdateTask } from '../../hooks/useTasks';
 import { useAttachments, useUploadAttachment, useDeleteAttachment } from '../../hooks/useAttachment';
 import { useMe } from '../../hooks/useAuth';
 import { useBillingInfo } from '../../hooks/useBilling';
@@ -129,6 +130,7 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
   const { data: activity = [],    isLoading: loadingActivity }    = useActivity(workspaceId, projectId, task._id);
   const { data: attachments = [], isLoading: loadingAttachments } = useAttachments(workspaceId, projectId, task._id);
 
+  const { mutate: updateTask }                              = useUpdateTask(workspaceId, projectId);
   const { mutate: addComment,       isPending: sending }    = useAddComment(workspaceId, projectId, task._id);
   const { mutate: deleteComment }                           = useDeleteComment(workspaceId, projectId, task._id);
   const { mutate: uploadAttachment, isPending: uploading }  = useUploadAttachment(workspaceId, projectId, task._id);
@@ -185,11 +187,33 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
           <div style={M.meta}>
             <span style={{ ...M.badge, ...priorityColors[task.priority] }}>{task.priority}</span>
             <span style={{ ...M.badge, ...statusColors[task.status] }}>{task.status}</span>
-            {task.dueDate && (
-              <span style={{ ...M.badge, background: '#0a1e2e', color: '#3a7080' }}>
-                Due {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            )}
+            {(() => {
+              const due  = task.dueDate ? new Date(task.dueDate) : null;
+              const now  = new Date();
+              const diff = due ? (due - now) / (1000 * 60 * 60 * 24) : null;
+              const dueDateColor =
+                !due                       ? '#3a7080' :
+                task.status === 'done'     ? '#3a7080' :
+                diff < 0                   ? '#f87171' :
+                diff < 1                   ? '#f59e0b' :
+                                             '#60a5fa';
+              return (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Set due date">
+                  <Calendar size={13} style={{ color: dueDateColor, flexShrink: 0 }} />
+                  <span style={{ ...M.badge, background: '#0a1e2e', color: dueDateColor, position: 'relative' }}>
+                    {due
+                      ? due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : 'Set due date'}
+                    <input
+                      type="date"
+                      defaultValue={due ? due.toISOString().split('T')[0] : ''}
+                      onChange={(e) => updateTask({ taskId: task._id, dueDate: e.target.value || null })}
+                      style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%' }}
+                    />
+                  </span>
+                </label>
+              );
+            })()}
             {task.assignee && (
               <span style={{ ...M.badge, background: '#0a1e2e', color: '#c0e8e4' }}>
                 @{task.assignee.name}

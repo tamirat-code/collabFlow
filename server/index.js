@@ -14,6 +14,7 @@ import billingRoutes from './routes/billingRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import http from 'http';
 import { initSocket } from './socket.js';
+import { startReminderJob } from './utils/RemainderJob.js';
 
 const app = express();
 
@@ -51,8 +52,9 @@ initSocket(httpServer);
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
-    httpServer.listen(process.env.PORT, () =>
-      console.log(`Server running on port ${process.env.PORT}`)
-    );
+    httpServer.listen(process.env.PORT, () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+      startReminderJob();
+    });
   })
   .catch(err => console.error(err));
