@@ -5,14 +5,21 @@ import ProjectHeader from '../components/ProjectHeader';
 import KanbanBoard from '../components/kanban/KanbanBoard';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import { useMe } from '../hooks/useAuth';
+import OnboardingTour from '../components/onboardingTour';
 
 export default function Dashboard() {
   const { activeWorkspaceId, activeProjectId } = useWorkspaceStore();
   const { data: workspaces, isLoading } = useWorkspaces();
+  const { data: user } = useMe();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [tourDone, setTourDone] = useState(false);
+
+  const showTour = !tourDone && user && user.tourCompleted === false;
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#031524' }}>
+      {showTour && <OnboardingTour onDone={() => setTourDone(true)} />}
 
       
       {sidebarOpen && (

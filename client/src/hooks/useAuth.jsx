@@ -107,3 +107,10 @@ export const useDeleteAccount = () => {
     },
   });
 };
+export const useCompleteTour = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => fetchClient('/auth/me/tour', { method: 'POST' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+  });
+};

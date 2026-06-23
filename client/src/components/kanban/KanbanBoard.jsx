@@ -12,11 +12,15 @@ import KanbanColumn from './KanbanColumn';
 import TaskCard from './TaskCard';
 import { useTasks, useMoveTask } from '../../hooks/useTasks';
 import { useRealtimeTasks } from '../../hooks/useRealtimeTasks';
+import FilterBar from '../FilterBar';
 
 const STATUSES = ['todo', 'in-progress', 'done'];
 
+const EMPTY_FILTERS = { search: '', priority: '', assignee: '', status: '', overdue: false };
+
 export default function KanbanBoard({ workspaceId, projectId }) {
-  const { data: tasks = [], isLoading } = useTasks(workspaceId, projectId);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const { data: tasks = [], isLoading } = useTasks(workspaceId, projectId, filters);
   const { mutate: moveTask } = useMoveTask(workspaceId, projectId);
 
   const [activeTask, setActiveTask] = useState(null);
@@ -97,6 +101,8 @@ export default function KanbanBoard({ workspaceId, projectId }) {
   }
 
   return (
+    <>
+    <FilterBar workspaceId={workspaceId} filters={filters} onChange={setFilters} />
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
@@ -105,12 +111,13 @@ export default function KanbanBoard({ workspaceId, projectId }) {
     >
      
       <div
-        className="flex flex-col gap-4 md:flex-row md:items-start md:overflow-x-auto md:pb-4"
+        data-tour="kanban-board" className="flex flex-col gap-4 md:flex-row md:items-start md:overflow-x-auto md:pb-4"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {STATUSES.map((status) => (
           <div
             key={status}
+            data-tour={status === "todo" ? "kanban-column-todo" : undefined}
             className="w-full md:w-[280px] md:flex-shrink-0"
           >
             <KanbanColumn
@@ -136,5 +143,6 @@ export default function KanbanBoard({ workspaceId, projectId }) {
         )}
       </DragOverlay>
     </DndContext>
+    </>
   );
 }

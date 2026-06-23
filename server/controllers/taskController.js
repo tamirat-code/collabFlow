@@ -44,11 +44,35 @@ export const createTask = async (req, res) => {
 };
 
 export const getTasks = async (req, res) => {
-  const tasks = await Task.find({ project: req.params.projectId })
+  const { search, priority, assignee, status, overdue } = req.query;
+
+  const filter = { project: req.params.projectId };
+
+  if (status)   filter.status   = status;
+  if (priority) filter.priority = priority;
+  if (assignee) filter.assignee = assignee;
+
+  if (overdue === 'true') {
+    filter.dueDate = { $lt: new Date() };
+    filter.status  = { $ne: 'done' };
+  }
+
+  let query = Task.find(filter)
     .populate('assignee', 'name email avatar')
     .populate('createdBy', 'name email avatar')
     .sort('order');
-  res.json(tasks);
+
+  const tasks = await query;
+
+  
+  const result = search
+    ? tasks.filter(t =>
+        t.title.toLowerCase().includes(search.toLowerCase()) ||
+        t.description?.toLowerCase().includes(search.toLowerCase())
+      )
+    : tasks;
+
+  res.json(result);
 };
 
 export const updateTask = async (req, res) => {

@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   role:     { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
 
   
+ tourCompleted: { type: Boolean, default: false },
   phone:    { type: String, default: '' },
   gender:   { type: String, enum: ['male', 'female', 'other', ''], default: '' },
   dob:      { type: Date },

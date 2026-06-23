@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { verifyEmail,
+import { verifyEmail,completeTour,
   resendVerificationEmail,register, login, refresh, logout, getMe ,forgotPassword, resetPassword,
   updateProfile, uploadAvatarHandler, changePassword, deleteAccount } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
@@ -21,7 +21,7 @@ router.post('/login', login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
-
+router.post  ('/me/tour',         protect, completeTour);
 
 router.put('/me',               protect, updateProfile);
 router.post('/me/avatar',       protect, uploadAvatar.single('avatar'), uploadAvatarHandler);

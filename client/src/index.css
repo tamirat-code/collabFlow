@@ -9,3 +9,23 @@ input::placeholder {
 input {
   font-family: inherit;
 }
+
+.collabflow-tour .driver-popover-title {
+  color: #e0f5f2;
+  font-size: 15px;
+  font-weight: 600;
+}
+.collabflow-tour .driver-popover-description {
+  color: #a0cdd8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.collabflow-tour .driver-popover-footer .driver-popover-btn-group button {
+  background: #00c8b4;
+  color: #020f18;
+  font-weight: 600;
+  border: none;
+}
+.collabflow-tour .driver-popover-close-btn {
+  color: #3a7080;
+}

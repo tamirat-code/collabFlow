@@ -1,10 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchClient } from '../api/fetchClient';
 
-export const useTasks = (workspaceId, projectId) => {
+export const useTasks = (workspaceId, projectId, filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.search)   params.set('search',   filters.search);
+  if (filters.priority) params.set('priority', filters.priority);
+  if (filters.assignee) params.set('assignee', filters.assignee);
+  if (filters.status)   params.set('status',   filters.status);
+  if (filters.overdue)  params.set('overdue',  'true');
+  const qs = params.toString();
+
   return useQuery({
-    queryKey: ['tasks', projectId],
-    queryFn: () => fetchClient(`/workspaces/${workspaceId}/projects/${projectId}/tasks`),
+    queryKey: ['tasks', projectId, filters],
+    queryFn: () => fetchClient(`/workspaces/${workspaceId}/projects/${projectId}/tasks${qs ? '?' + qs : ''}`),
     enabled: !!projectId,
   });
 };
@@ -41,7 +49,7 @@ export const useMoveTask = (workspaceId, projectId) => {
         method: 'PUT',
         body: JSON.stringify({ status, order }),
       }),
-    // Optimistic update for smooth drag-drop
+    
     onMutate: async ({ taskId, status, order }) => {
       await queryClient.cancelQueries({ queryKey: ['tasks', projectId] });
       const previous = queryClient.getQueryData(['tasks', projectId]);

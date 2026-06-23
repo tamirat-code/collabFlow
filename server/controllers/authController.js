@@ -11,7 +11,7 @@ import jwt from 'jsonwebtoken';
 
 import { sendEmail } from '../utils/sendEmail.js';
 import crypto from 'crypto';
-import { avatarCloudinary } from '../config/avatarUpload.js';
+import { avatarCloudinary, uploadToCloudinary } from '../config/avatarUpload.js';
 
 
 
@@ -225,7 +225,6 @@ export const updateProfile = async (req, res) => {
 };
 
 export const uploadAvatarHandler = async (req, res) => {
-  
   if (!req.file) {
     return res.status(400).json({ message: 'No image uploaded' });
   }
@@ -233,20 +232,22 @@ export const uploadAvatarHandler = async (req, res) => {
   const user = await User.findById(req.user.id);
   if (!user) return res.status(404).json({ message: 'User not found' });
 
-  if (user.avatar?.includes('res.cloudinary.com') && user.avatarPublicId) {
-    try {
-      await avatarCloudinary.uploader.destroy(user.avatarPublicId);
-    } catch (err) {
-      console.error('Failed to remove old avatar from Cloudinary:', err.message);
-    }
+ 
+  if (user.avatarPublicId) {
+    try { await avatarCloudinary.uploader.destroy(user.avatarPublicId); } catch {}
   }
 
-  user.avatar = req.file.path;
-  user.avatarPublicId = req.file.filename;
+  const result = await uploadToCloudinary(req.file.buffer);
+
+  user.avatar = result.secure_url;
+  user.avatarPublicId = result.public_id;
   await user.save();
 
-  const safeUser = await User.findById(user._id).select('-password');
-  res.json(safeUser);
+  const safeUser = await User.findById(user._id).select('+password');
+  const obj = safeUser.toObject();
+  obj.hasPassword = !!obj.password;
+  delete obj.password;
+  res.json(obj);
 };
 
 
@@ -343,4 +344,8 @@ export const deleteAccount = async (req, res) => {
   }).catch((err) => console.error('Goodbye email failed:', err.message));
 
   res.json({ message: 'Account deleted successfully' });
+};
+export const completeTour = async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, { tourCompleted: true });
+  res.json({ message: 'Tour completed' });
 };
