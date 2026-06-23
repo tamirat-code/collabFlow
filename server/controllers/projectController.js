@@ -1,5 +1,6 @@
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
+import { notify } from '../utils/Notify.js';
 
 
 export const createProject = async (req, res) => {
@@ -11,6 +12,25 @@ export const createProject = async (req, res) => {
     workspace: req.params.workspaceId,
     createdBy: req.user.id,
   });
+
+ 
+  const workspace = req.workspace;
+  if (workspace) {
+    const recipients = workspace.members
+      .map((m) => m.user.toString())
+      .filter((uid) => uid !== req.user.id);
+
+    recipients.forEach((recipientId) => {
+      notify({
+        recipientId,
+        senderId:   req.user.id,
+        type:       'project_created',
+        projectId:  project._id,
+        workspaceId: workspace._id,
+        message:    `A new project "${name}" was created`,
+      }).catch(console.error);
+    });
+  }
 
   res.status(201).json(project);
 };
