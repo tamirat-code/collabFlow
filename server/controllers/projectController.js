@@ -69,3 +69,89 @@ export const deleteProject = async (req, res) => {
 
   res.json({ message: 'Project deleted' });
 };
+export const getAnalytics = async (req, res) => {
+  const { workspaceId } = req.params;
+
+  const projects = await Project.find({ workspace: workspaceId });
+  const projectIds = projects.map((p) => p._id);
+
+  const tasks = await Task.find({ project: { $in: projectIds } })
+    .populate('assignee', 'name avatar')
+    .populate('project', 'name');
+
+  const byStatus = {
+    todo:        tasks.filter(t => t.status === 'todo').length,
+    'in-progress': tasks.filter(t => t.status === 'in-progress').length,
+    done:        tasks.filter(t => t.status === 'done').length,
+  };
+
+  const byPriority = {
+    low:    tasks.filter(t => t.priority === 'low').length,
+    medium: tasks.filter(t => t.priority === 'medium').length,
+    high:   tasks.filter(t => t.priority === 'high').length,
+  };
+
+  const byProject = projects.map((p) => ({
+    name:  p.name,
+    total: tasks.filter(t => t.project._id.toString() === p._id.toString()).length,
+    done:  tasks.filter(t => t.project._id.toString() === p._id.toString() && t.status === 'done').length,
+  }));
+
+  
+  const now = new Date();
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (13 - i));
+    return d;
+  });
+
+  const createdPerDay = days.map((day) => {
+    const label = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const count = tasks.filter((t) => {
+      const created = new Date(t.createdAt);
+      return (
+        created.getFullYear() === day.getFullYear() &&
+        created.getMonth()    === day.getMonth() &&
+        created.getDate()     === day.getDate()
+      );
+    }).length;
+    return { label, count };
+  });
+
+  
+  const assigneeCounts = {};
+  tasks.forEach((t) => {
+    if (!t.assignee) return;
+    const key = t.assignee._id.toString();
+    if (!assigneeCounts[key]) {
+      assigneeCounts[key] = { name: t.assignee.name, avatar: t.assignee.avatar, count: 0 };
+    }
+    assigneeCounts[key].count++;
+  });
+  const topAssignees = Object.values(assigneeCounts)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const overdue = tasks.filter(t =>
+    t.dueDate && new Date(t.dueDate) < now && t.status !== 'done'
+  ).length;
+
+
+  const completionRate = tasks.length
+    ? Math.round((byStatus.done / tasks.length) * 100)
+    : 0;
+
+  res.json({
+    totals: {
+      projects: projects.length,
+      tasks:    tasks.length,
+      overdue,
+      completionRate,
+    },
+    byStatus,
+    byPriority,
+    byProject,
+    createdPerDay,
+    topAssignees,
+  });
+};

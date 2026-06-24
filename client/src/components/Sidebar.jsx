@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus ,Zap,X} from 'lucide-react';
+import { LayoutGrid, Plus, ChevronDown, LogOut, UserPlus ,Zap,X,BarChart2} from 'lucide-react';
 import { useWorkspaces, useCreateWorkspace, useInviteMember } from '../hooks/useWorkspaces';
 import { useProjects, useCreateProject } from '../hooks/useProjects';
 import { useLogout, useMe } from '../hooks/useAuth';
@@ -171,7 +171,14 @@ export default function Sidebar({ onClose }) {
             Upgrade plan
           </button>
         </div>
-
+<button
+  onClick={() => navigate('/analytics')}
+  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080', fontSize: '13px', fontFamily: 'inherit' }}
+  onMouseEnter={e => e.currentTarget.style.color = '#00c8b4'}
+  onMouseLeave={e => e.currentTarget.style.color = '#3a7080'}
+>
+  <BarChart2 size={15} /> Analytics
+</button>
       <div style={S.footer}>
         <div style={S.userRow}>
           <div

@@ -7,9 +7,14 @@ import { getComments, addComment, deleteComment, getActivity } from '../controll
 import { getAttachments, uploadAttachment, deleteAttachment } from '../controllers/attachmentController.js';
 import {upload} from '../config/Cloudinary.js';
 import multer from 'multer';
+import { getAnalytics } from '../controllers/projectController.js';
+
+
 const router = express.Router({ mergeParams: true });
 
 
+
+router.get('/analytics', getAnalytics);
 router.post('/',             requireWorkspaceRole('admin', 'member'), enforceProjectLimit, createProject);
 router.get('/',              getProjects);
 router.get('/:projectId',    getProject);

@@ -13,6 +13,7 @@ import ResendVerification from './pages/ResendVerification';
 import NotFound from './pages/NotFound';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
+import Analytics from './pages/Analytics';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/dashboard"          element={<Dashboard />} />
           <Route path="/dashboard/profile"  element={<Profile />} />
           <Route path="/billing"            element={<Billing />} />
+          <Route path="/analytics" element={<Analytics />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
