@@ -15,12 +15,19 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import http from 'http';
 import { initSocket } from './socket.js';
 import { startReminderJob } from './utils/RemainderJob.js';
+import {
+  generalLimiter,
+  authLimiter,
+  sensitiveAuthLimiter,
+  uploadLimiter,
+  billingLimiter,
+} from './middleware/rateLimiter.js';
 
 const app = express();
 
+app.set('trust proxy', 1);
 
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
-
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
@@ -34,6 +41,19 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+app.use(generalLimiter);
+
+app.use('/api/auth/login',               authLimiter);
+app.use('/api/auth/register',            authLimiter);
+app.use('/api/auth/forgot-password',     sensitiveAuthLimiter);
+app.use('/api/auth/reset-password',      sensitiveAuthLimiter);
+app.use('/api/auth/resend-verification', sensitiveAuthLimiter);
+app.use('/api/auth/verify-email',        sensitiveAuthLimiter);
+
+
+app.use('/api/billing', billingLimiter);
+
+
 app.use('/api/auth',          authRoutes);
 app.use('/api/workspaces',    workspaceRoutes);
 app.use('/api/billing',       billingRoutes);
@@ -44,7 +64,6 @@ app.use((err, req, res, next) => {
   console.error(err.message);
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
 });
-
 
 const httpServer = http.createServer(app);
 initSocket(httpServer);
