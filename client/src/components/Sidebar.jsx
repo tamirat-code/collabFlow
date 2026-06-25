@@ -281,7 +281,7 @@ export default function Sidebar({ onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 4px' }}>
           <div
             style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, cursor: 'pointer' }}
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/dashboard/profile')}
           >
             {user?.avatar ? (
               <img

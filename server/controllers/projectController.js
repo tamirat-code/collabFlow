@@ -1,7 +1,7 @@
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
 import { notify } from '../utils/Notify.js';
-
+import { tasksToCSV, tasksToJSON } from '../utils/csvConverter.js';
 
 export const createProject = async (req, res) => {
   const { name, description } = req.body;
@@ -154,4 +154,35 @@ export const getAnalytics = async (req, res) => {
     createdPerDay,
     topAssignees,
   });
+};
+
+
+export const exportProject = async (req, res) => {
+  const { projectId } = req.params;
+  const format = req.query.format || 'csv';
+
+  const project = await Project.findById(projectId);
+  if (!project) return res.status(404).json({ message: 'Project not found' });
+
+  const tasks = await Task.find({ project: projectId })
+    .populate('assignee', 'name email')
+    .populate('createdBy', 'name email')
+    .sort('status');
+
+  const safeName = project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `${safeName}_${date}`;
+
+  if (format === 'json') {
+    const data = tasksToJSON(tasks);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`);
+    return res.json(data);
+  }
+
+
+  const csv = tasksToCSV(tasks);
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+  return res.send(csv);
 };

@@ -1,7 +1,7 @@
 import express from 'express';
 import { requireWorkspaceRole } from '../middleware/workspaceMiddleware.js';
 import { requirePlan, enforceProjectLimit } from '../middleware/planMiddleware.js';
-import { createProject, getProjects, getProject, updateProject, deleteProject } from '../controllers/projectController.js';
+import { createProject, getProjects, getProject, updateProject, deleteProject ,exportProject} from '../controllers/projectController.js';
 import { createTask, getTasks, updateTask, moveTask, deleteTask } from '../controllers/taskController.js';
 import { getComments, addComment, deleteComment, getActivity } from '../controllers/commentController.js';
 import { getAttachments, uploadAttachment, deleteAttachment } from '../controllers/attachmentController.js';
@@ -20,7 +20,7 @@ router.get('/',              getProjects);
 router.get('/:projectId',    getProject);
 router.put('/:projectId',    updateProject);
 router.delete('/:projectId', deleteProject);
-
+router.get('/:projectId/export', exportProject);
 
 router.post('/:projectId/tasks',              createTask);
 router.get('/:projectId/tasks',               getTasks);
