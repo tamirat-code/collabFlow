@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { X, Trash2, Send, MessageSquare, Activity, Paperclip, Upload, FileText, Image, Zap, Calendar } from 'lucide-react';
+import { X, Trash2, Send, MessageSquare, Activity, Paperclip, Upload, FileText, Image, Zap, Calendar, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useComments, useActivity, useAddComment, useDeleteComment } from '../../hooks/useComments';
 import { useUpdateTask } from '../../hooks/useTasks';
+import { useTaskSummary, useSubtaskSuggestions, usePrioritySuggestion } from '../../hooks/useAi';
 import { useAttachments, useUploadAttachment, useDeleteAttachment } from '../../hooks/useAttachment';
 import { useMe } from '../../hooks/useAuth';
 import { useBillingInfo } from '../../hooks/useBilling';
@@ -44,6 +45,14 @@ const M = {
   fileName:   { fontSize: '13px', color: '#c0e8e4', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   fileSize:   { fontSize: '11px', color: '#2a6070' },
   fileLink:   { fontSize: '12px', color: '#00c8b4', textDecoration: 'none' },
+  // AI
+  aiSection:   { marginBottom: '1.25rem' },
+  aiBtn:       { display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #00c8b4, #0080ff)', border: 'none', borderRadius: '20px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: '1rem' },
+  aiCard:      { background: '#071520', border: '1px solid #0e3347', borderRadius: '10px', padding: '1rem', marginBottom: '0.75rem' },
+  aiLabel:     { fontSize: '11px', fontWeight: 600, color: '#00c8b4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' },
+  aiText:      { fontSize: '13px', color: '#a0cdd8', lineHeight: 1.6 },
+  aiChip:      { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 12px', background: '#0a2535', border: '1px solid #0e3347', borderRadius: '20px', fontSize: '12px', color: '#c0e8e4', marginRight: '6px', marginBottom: '6px', cursor: 'pointer' },
+  aiChipApply: { background: 'rgba(0,200,180,0.1)', border: '1px solid #00c8b4', color: '#00c8b4' },
   // Upgrade
   upgrade:    { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '2.5rem 1rem', textAlign: 'center' },
   upgradeTitle: { fontSize: '15px', fontWeight: 600, color: '#e0f5f2' },
@@ -131,6 +140,9 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
   const { data: attachments = [], isLoading: loadingAttachments } = useAttachments(workspaceId, projectId, task._id);
 
   const { mutate: updateTask }                              = useUpdateTask(workspaceId, projectId);
+  const { mutate: getSummary,   isPending: summarising, data: summaryData }   = useTaskSummary(workspaceId, projectId, task._id);
+  const { mutate: getSubtasks,  isPending: gettingSubtasks, data: subtasksData } = useSubtaskSuggestions(workspaceId, projectId, task._id);
+  const { mutate: getPriority,  isPending: gettingPriority, data: priorityData } = usePrioritySuggestion(workspaceId, projectId, task._id);
   const { mutate: addComment,       isPending: sending }    = useAddComment(workspaceId, projectId, task._id);
   const { mutate: deleteComment }                           = useDeleteComment(workspaceId, projectId, task._id);
   const { mutate: uploadAttachment, isPending: uploading }  = useUploadAttachment(workspaceId, projectId, task._id);

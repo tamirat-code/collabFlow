@@ -1,7 +1,7 @@
 import Attachment from '../models/Attachment.js';
 import Activity from '../models/Activity.js';
 import Task from '../models/Task.js';
-import { cloudinary, getResourceType } from '../config/Cloudinary.js';
+import { cloudinary, getResourceType, uploadToCloudinaryBuffer } from '../config/Cloudinary.js';
 import { fixFilename } from '../utils/fixFilename.js';
 import { getIO } from '../socket.js';
 
@@ -18,13 +18,20 @@ export const uploadAttachment = async (req, res) => {
   const task = await Task.findById(req.params.taskId);
   if (!task) return res.status(404).json({ message: 'Task not found' });
 
+  const resourceType = getResourceType(req.file.mimetype);
+  const result = await uploadToCloudinaryBuffer(req.file.buffer, {
+    folder:        'collabflow/tasks',
+    resource_type: resourceType,
+    public_id:     `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  });
+
   const attachment = await Attachment.create({
     task:         req.params.taskId,
     uploadedBy:   req.user.id,
     name:         fixFilename(req.file.originalname),
-    url:          req.file.path,          
-    publicId:     req.file.filename,       
-    resourceType: getResourceType(req.file.mimetype), 
+    url:          result.secure_url,
+    publicId:     result.public_id,
+    resourceType,
     mimeType:     req.file.mimetype,
     size:         req.file.size,
   });

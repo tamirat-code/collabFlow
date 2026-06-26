@@ -19,12 +19,21 @@ export const useBillingSuccessHandler = (workspaceId) => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true' && workspaceId) {
+    if (params.get('success') !== 'true') return;
+    if (!workspaceId) return;
+    
+    queryClient.invalidateQueries({ queryKey: ['billing', workspaceId] });
+    queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+    window.history.replaceState({}, '', window.location.pathname);
+
+    let attempts = 0;
+    const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['billing', workspaceId] });
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      // Clean the query string without a full navigation
-      window.history.replaceState({}, '', window.location.pathname);
-    }
+      attempts++;
+      if (attempts >= 10) clearInterval(interval);
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [workspaceId, queryClient]);
 };
 

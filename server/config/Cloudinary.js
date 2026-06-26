@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import path from 'path';
 
@@ -15,19 +14,13 @@ export const getResourceType = (mimetype = '') => {
   return 'raw';
 };
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: async (req, file) => {
-    const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
-    const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    return {
-      folder: 'collabflow/tasks',
-      resource_type: getResourceType(file.mimetype),
-      public_id: safeName,
-      format: ext || undefined,
-    };
-  },
-});
+export const uploadToCloudinaryBuffer = (buffer, options = {}) =>
+  new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(options, (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    }).end(buffer);
+  });
 
 const ALLOWED_MIMES = [
   'image/jpeg', 'image/png', 'image/gif', 'image/webp',
@@ -40,7 +33,7 @@ const ALLOWED_MIMES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'text/plain', 'application/zip', 'application/octet-stream',
   'audio/mpeg', 'audio/wav', 'audio/ogg',
-  'video/mp4', 'video/quicktime', 
+  'video/mp4', 'video/quicktime',
 ];
 
 const ALLOWED_EXTENSIONS = [
@@ -49,12 +42,12 @@ const ALLOWED_EXTENSIONS = [
   '.mp3', '.wav', '.ogg', '.mp4', '.mov',
 ];
 
+
 export const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-
     if (ALLOWED_MIMES.includes(file.mimetype) || ALLOWED_EXTENSIONS.includes(ext)) {
       cb(null, true);
     } else {

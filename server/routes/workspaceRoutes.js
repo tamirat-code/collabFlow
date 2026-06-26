@@ -9,6 +9,7 @@ import {
 } from '../controllers/workspaceController.js';
 import projectRoutes from './projectRoutes.js';
 import { getAnalytics } from '../controllers/projectController.js';
+import aiRoutes from './aiRoutes.js';
 const router = express.Router();
 
 router.use(protect);
@@ -22,5 +23,5 @@ router.delete('/:workspaceId/members/:userId',    checkWorkspaceAccess, requireW
 router.delete('/:workspaceId',                    checkWorkspaceAccess, deleteWorkspace);
 router.get('/:workspaceId/analytics', checkWorkspaceAccess, getAnalytics);
 router.use('/:workspaceId/projects', checkWorkspaceAccess, projectRoutes);
-
+router.use('/:workspaceId', checkWorkspaceAccess, aiRoutes);
 export default router;
