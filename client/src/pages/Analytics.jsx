@@ -83,9 +83,7 @@ export default function Analytics() {
   return (
     <div style={S.page}>
       <div style={S.inner}>
-        <button style={S.back} onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={14} /> Back to dashboard
-        </button>
+        
 
         <h1 style={S.heading}>Analytics</h1>
         <p style={S.sub}>{activeWorkspace?.name} — workspace overview</p>

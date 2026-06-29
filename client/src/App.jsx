@@ -14,6 +14,8 @@ import NotFound from './pages/NotFound';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
 import Analytics from './pages/Analytics';
+import AppLayout from './components/AppLayout';
+
 
 export default function App() {
   return (
@@ -30,11 +32,20 @@ export default function App() {
         <Route path="/forgot-password"      element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard"          element={<Dashboard />} />
-          <Route path="/dashboard/profile"  element={<Profile />} />
-          <Route path="/billing"            element={<Billing />} />
-          <Route path="/analytics" element={<Analytics />} />
+       <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+
+          <Route path="/analytics" element={
+            <AppLayout><Analytics /></AppLayout>
+          } />
+
+          <Route path="/billing" element={
+            <AppLayout><Billing /></AppLayout>
+          } />
+
+          <Route path="/profile" element={
+            <AppLayout><Profile /></AppLayout>
+          } />
         </Route>
 
         <Route path="*" element={<NotFound />} />

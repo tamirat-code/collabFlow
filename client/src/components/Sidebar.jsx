@@ -260,7 +260,7 @@ export default function Sidebar({ onClose }) {
         })}
       </div>
 
-      {/* ── Upgrade ── */}
+    
       <div style={{ padding: '0.75rem', borderTop: '1px solid #0e3347' }}>
         <button
           onClick={() => navigate('/billing')}
@@ -277,11 +277,11 @@ export default function Sidebar({ onClose }) {
           <Zap size={13} /> Upgrade plan
         </button>
 
-        {/* ── User footer ── */}
+      
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 4px' }}>
           <div
             style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, cursor: 'pointer' }}
-            onClick={() => navigate('/dashboard/profile')}
+            onClick={() => navigate('/profile')}
           >
             {user?.avatar ? (
               <img

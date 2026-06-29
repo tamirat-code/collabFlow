@@ -186,13 +186,11 @@ export default function Profile() {
   return (
     <div style={S.page}>
 
-      {/* ── OVERVIEW SCREEN ── */}
+    
       <div style={{ opacity: showBio || showPw ? 0 : 1, transition: 'opacity 0.2s' }}>
-        {/* Top bar */}
+       
         <div style={S.topBar}>
-          <button style={S.backBtn} onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={16} />
-          </button>
+         
           <span style={S.topTitle}>Profile</span>
           <div style={{ width: '40px' }} />
         </div>

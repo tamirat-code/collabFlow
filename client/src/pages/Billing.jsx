@@ -87,9 +87,7 @@ if (!activeWorkspaceId) {
   return (
     <div style={S.page}>
       <div style={S.inner}>
-        <button style={S.back} onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={14} /> Back to dashboard
-        </button>
+       
 
         <h1 style={S.heading}>Plans & billing</h1>
         <p style={S.sub}>Upgrade your workspace to unlock more projects, members, and features.</p>
