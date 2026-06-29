@@ -8,7 +8,7 @@ export const getTaskSummary = async (req, res) => {
   if (!task) return res.status(404).json({ message: 'Task not found' });
 
   const [comments, activity] = await Promise.all([
-    Comment.find({ task: task._id }).populate('user', 'name').limit(20).sort('-createdAt'),
+    Comment.find({ task: task._id }).populate('author', 'name').limit(20).sort('-createdAt'),
     Activity.find({ task: task._id }).limit(20).sort('-createdAt'),
   ]);
 

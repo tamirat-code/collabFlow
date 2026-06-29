@@ -133,7 +133,8 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
 
   const { data: me } = useMe();
   const { data: billing } = useBillingInfo(workspaceId);
-  const isPro = billing?.plan === 'pro' || billing?.plan === 'business';
+  const isPro      = billing?.plan === 'pro' || billing?.plan === 'business';
+  const isBusiness = billing?.plan === 'business';
 
   const { data: comments = [],    isLoading: loadingComments }    = useComments(workspaceId, projectId, task._id);
   const { data: activity = [],    isLoading: loadingActivity }    = useActivity(workspaceId, projectId, task._id);
@@ -246,10 +247,56 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
             <button style={tab === 'activity'    ? M.tabActive : M.tab} onClick={() => setTab('activity')}>
               <Activity size={13} /> Activity
             </button>
+            {isBusiness && (
+              <button style={tab === 'ai' ? M.tabActive : M.tab} onClick={() => setTab('ai')}>
+                <Sparkles size={13} /> AI
+              </button>
+            )}
           </div>
 
        
-          {!isPro && <UpgradePrompt onClose={onClose} />}
+          {tab === 'ai' && (
+            <div style={M.aiSection}>
+              <div style={M.aiCard}>
+                <p style={M.aiLabel}>Task Summary</p>
+                {summaryData?.summary
+                  ? <p style={M.aiText}>{summaryData.summary}</p>
+                  : <p style={{ ...M.aiText, color: '#2a6070' }}>Get an AI summary of this task based on comments and activity.</p>}
+                <button style={{ ...M.aiBtn, marginTop: '0.75rem', marginBottom: 0 }} onClick={() => getSummary()} disabled={summarising}>
+                  <Sparkles size={13} />{summarising ? 'Summarising...' : summaryData ? 'Refresh' : 'Generate Summary'}
+                </button>
+              </div>
+
+              <div style={M.aiCard}>
+                <p style={M.aiLabel}>Subtask Suggestions</p>
+                {subtasksData?.subtasks?.length
+                  ? <div style={{ marginBottom: '0.75rem' }}>{subtasksData.subtasks.map((s, i) => (
+                      <span key={i} style={M.aiChip}>+ {s}</span>
+                    ))}</div>
+                  : <p style={{ ...M.aiText, color: '#2a6070', marginBottom: '0.75rem' }}>Break this task into smaller actionable pieces.</p>}
+                <button style={{ ...M.aiBtn, marginBottom: 0 }} onClick={() => getSubtasks()} disabled={gettingSubtasks}>
+                  <Sparkles size={13} />{gettingSubtasks ? 'Thinking...' : subtasksData ? 'Regenerate' : 'Suggest Subtasks'}
+                </button>
+              </div>
+
+              <div style={M.aiCard}>
+                <p style={M.aiLabel}>Priority Suggestion</p>
+                {priorityData
+                  ? <div>
+                      <p style={{ ...M.aiText, marginBottom: '0.75rem' }}><strong style={{ color: '#e0f5f2', textTransform: 'capitalize' }}>{priorityData.priority}</strong> — {priorityData.reason}</p>
+                      <span style={{ ...M.aiChip, ...M.aiChipApply, cursor: 'pointer' }} onClick={() => updateTask({ taskId: task._id, priority: priorityData.priority })}>
+                        Apply {priorityData.priority} priority
+                      </span>
+                    </div>
+                  : <p style={{ ...M.aiText, color: '#2a6070', marginBottom: '0.75rem' }}>Let AI suggest the right priority for this task.</p>}
+                <button style={{ ...M.aiBtn, marginTop: '0.75rem', marginBottom: 0 }} onClick={() => getPriority()} disabled={gettingPriority}>
+                  <Sparkles size={13} />{gettingPriority ? 'Analysing...' : priorityData ? 'Re-analyse' : 'Suggest Priority'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isPro && tab !== 'ai' && <UpgradePrompt onClose={onClose} />}
 
          
           {isPro && tab === 'comments' && (

@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-// Webhook — raw body, no auth
+
 router.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 
 router.use(protect);
