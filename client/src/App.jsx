@@ -33,20 +33,22 @@ export default function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+  <Route path="/dashboard" element={
+    <AppLayout><Dashboard /></AppLayout>
+  } />
 
-          <Route path="/analytics" element={
-            <AppLayout><Analytics /></AppLayout>
-          } />
+  <Route path="/analytics" element={
+    <AppLayout><Analytics /></AppLayout>
+  } />
 
-          <Route path="/billing" element={
-            <AppLayout><Billing /></AppLayout>
-          } />
+  <Route path="/billing" element={
+    <AppLayout><Billing /></AppLayout>
+  } />
 
-          <Route path="/profile" element={
-            <AppLayout><Profile /></AppLayout>
-          } />
-        </Route>
+  <Route path="/profile" element={
+    <AppLayout><Profile /></AppLayout>
+  } />
+</Route>
 
         <Route path="*" element={<NotFound />} />
         </Routes>
