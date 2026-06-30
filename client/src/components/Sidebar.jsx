@@ -179,7 +179,7 @@ export default function Sidebar({ onClose }) {
         )}
       </div>
 
-      {/* ── Navigation ── */}
+
       <div style={{ padding: '0.75rem', borderBottom: '1px solid #0e3347' }}>
         <p style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px', paddingLeft: '4px' }}>
           Navigate
@@ -202,7 +202,7 @@ export default function Sidebar({ onClose }) {
         </button>
       </div>
 
-      {/* ── Projects ── */}
+      
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: '4px' }}>
           <span style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -233,11 +233,14 @@ export default function Sidebar({ onClose }) {
         )}
 
         {projects?.map((project) => {
-          const isActive = project._id === activeProjectId;
+          const isActive = project._id === activeProjectId && location.pathname === '/dashboard';
+
           return (
             <button
               key={project._id}
-              onClick={() => { setActiveProject(project._id); onClose?.(); }}
+              onClick={() => {
+                 setActiveProject(project._id); onClose?.(); 
+                navigate('/dashboard');}}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
                 padding: '8px 10px', borderRadius: '8px', fontSize: '13px',
