@@ -40,7 +40,6 @@ function DashboardHome({ workspaces, user, activeWorkspaceId }) {
   const { data: projects = [] } = useProjects(activeWorkspaceId);
   const activeWorkspace = workspaces?.find(w => w._id === activeWorkspaceId);
 
-  // collect all task counts across projects
   const totalProjects = projects.length;
 
   const hour = new Date().getHours();
@@ -49,7 +48,6 @@ function DashboardHome({ workspaces, user, activeWorkspaceId }) {
 
   return (
     <div>
-      {/* Greeting */}
       <div style={{ marginBottom: '1.75rem' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#e0f5f2', marginBottom: '4px' }}>
           {greeting}, {firstName}
@@ -59,7 +57,6 @@ function DashboardHome({ workspaces, user, activeWorkspaceId }) {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
         <StatCard
           icon={LayoutGrid}
@@ -95,7 +92,6 @@ function DashboardHome({ workspaces, user, activeWorkspaceId }) {
         />
       </div>
 
-      {/* Projects grid */}
       <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#e0f5f2' }}>Projects</h2>
         <button
@@ -185,21 +181,23 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-hidden" style={{ background: '#031524' }}>
       {showTour && <OnboardingTour onDone={() => setTourDone(true)} />}
 
+     
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 md:hidden"
+          className="fixed inset-0 z-20 xs:hidden"
           style={{ background: 'rgba(0,0,0,0.6)' }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <div className={`fixed md:relative z-30 h-full transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'max-md:-translate-x-full'}`}>
+     
+      <div className={`fixed xs:relative z-30 h-full transition-transform duration-300 ease-in-out xs:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
       <main className="flex-1 overflow-y-auto flex flex-col min-w-0">
 
-        {/* Top bar */}
+       
         <div style={{
           display: 'flex', alignItems: 'center', gap: '12px',
           padding: '0.875rem 1.5rem',
@@ -207,17 +205,16 @@ export default function Dashboard() {
           background: '#031524',
           position: 'sticky', top: 0, zIndex: 10,
         }}>
-          {/* Mobile menu */}
+        
           <button
-            className="md:hidden"
+            className="flex xs:hidden"
             onClick={() => setSidebarOpen(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#00c8b4', display: 'flex', flexShrink: 0 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#00c8b4', flexShrink: 0 }}
           >
             <Menu size={22} />
           </button>
 
-          {/* Search */}
-          <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
+          <div className="block xs:hidden" style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
             <Search size={14} color="#3a7080" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               value={searchQuery}
@@ -241,7 +238,6 @@ export default function Dashboard() {
 
           <div style={{ flex: 1 }} />
 
-          {/* User chip */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#051e2e', border: '1px solid #0e3347', borderRadius: '20px', padding: '5px 12px 5px 5px' }}>
             {user?.avatar ? (
               <img src={user.avatar} style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
@@ -261,7 +257,6 @@ export default function Dashboard() {
             <div className="flex items-center justify-center h-full" style={{ color: '#3a7080' }}>Loading...</div>
           )}
 
-          {/* No workspace */}
           {!isLoading && workspaces?.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <LayoutGrid size={48} style={{ color: '#1e4a5a', marginBottom: '1rem' }} />
@@ -270,12 +265,10 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Home view — no project selected */}
           {!isLoading && activeWorkspaceId && !activeProjectId && workspaces?.length > 0 && (
             <DashboardHome workspaces={workspaces} user={user} activeWorkspaceId={activeWorkspaceId} />
           )}
 
-          {/* Kanban view — project selected */}
           {!isLoading && activeWorkspaceId && activeProjectId && (
             <>
               <ProjectHeader workspaceId={activeWorkspaceId} projectId={activeProjectId} />

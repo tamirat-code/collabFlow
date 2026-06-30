@@ -86,10 +86,11 @@ export default function Sidebar({ onClose }) {
             CollabFlow
           </span>
         </div>
+        {/* Close button — visible only below 720px */}
         <button
           onClick={onClose}
-          className="md:hidden"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080', display: 'flex' }}
+          className="flex xs:hidden"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080' }}
         >
           <X size={18} />
         </button>
@@ -179,7 +180,7 @@ export default function Sidebar({ onClose }) {
         )}
       </div>
 
-
+      {/* ── Navigation ── */}
       <div style={{ padding: '0.75rem', borderBottom: '1px solid #0e3347' }}>
         <p style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px', paddingLeft: '4px' }}>
           Navigate
@@ -202,7 +203,7 @@ export default function Sidebar({ onClose }) {
         </button>
       </div>
 
-      
+      {/* ── Projects ── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: '4px' }}>
           <span style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -239,8 +240,10 @@ export default function Sidebar({ onClose }) {
             <button
               key={project._id}
               onClick={() => {
-                 setActiveProject(project._id); onClose?.(); 
-                navigate('/dashboard');}}
+                setActiveProject(project._id);
+                onClose?.();
+                navigate('/dashboard');
+              }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
                 padding: '8px 10px', borderRadius: '8px', fontSize: '13px',
@@ -263,7 +266,7 @@ export default function Sidebar({ onClose }) {
         })}
       </div>
 
-    
+      {/* ── Upgrade ── */}
       <div style={{ padding: '0.75rem', borderTop: '1px solid #0e3347' }}>
         <button
           onClick={() => navigate('/billing')}
@@ -280,7 +283,7 @@ export default function Sidebar({ onClose }) {
           <Zap size={13} /> Upgrade plan
         </button>
 
-      
+        {/* ── User footer ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 4px' }}>
           <div
             style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, cursor: 'pointer' }}

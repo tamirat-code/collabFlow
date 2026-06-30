@@ -56,7 +56,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: () =>
       fetchClient('/auth/logout', { method: 'POST' }),
-    onSuccess: () => {
+    onSettled: () => {
       logout();
       queryClient.clear(); 
     },
