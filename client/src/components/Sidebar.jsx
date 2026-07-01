@@ -28,6 +28,7 @@ export default function Sidebar({ onClose }) {
   const [showCreateWs, setShowCreateWs] = useState(false);
   const [showCreateProj, setShowCreateProj] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+const { role: workspaceRole } = useWorkspaceRole();
 
   useEffect(() => {
     if (!workspaces) return;
@@ -296,9 +297,10 @@ export default function Sidebar({ onClose }) {
               <p style={{ fontSize: '13px', fontWeight: 500, color: '#e0f5f2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.name}
               </p>
-              <p style={{ fontSize: '11px', color: '#3a7080', textTransform: 'capitalize' }}>
-                {user?.role}
-              </p>
+           <p style={{ fontSize: '11px', color: '#3a7080', textTransform: 'capitalize' }}>
+  {workspaceRole || user?.role}
+</p>
+
             </div>
           </div>
           <NotificationBell />

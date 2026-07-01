@@ -9,7 +9,7 @@ import { useMe } from '../../hooks/useAuth';
 import { useBillingInfo } from '../../hooks/useBilling';
 import useWorkspaceStore from '../../store/workspaceStore';
 import useToastStore from '../../store/toastStore';
-
+import { useTaskPresence } from '../../hooks/useTaskPresence';
 const M = {
   overlay:    { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '1rem' },
   card:       { background: '#051e2e', border: '1px solid #0e3347', borderRadius: '16px', width: '100%', maxWidth: '580px', maxHeight: '88vh', display: 'flex', flexDirection: 'column' },
@@ -148,7 +148,8 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
   const { mutate: deleteComment }                           = useDeleteComment(workspaceId, projectId, task._id);
   const { mutate: uploadAttachment, isPending: uploading }  = useUploadAttachment(workspaceId, projectId, task._id);
   const { mutate: deleteAttachment }                        = useDeleteAttachment(workspaceId, projectId, task._id);
-
+  const viewers = useTaskPresence(task._id, projectId);
+  const [showViewerList, setShowViewerList] = useState(false);
   const handleSend = () => {
     if (!text.trim()) return;
     addComment(text.trim(), { onSuccess: () => setText('') });
@@ -193,6 +194,156 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
           <h2 style={M.title}>{task.title}</h2>
           <button style={M.closeBtn} onClick={onClose}><X size={18} /></button>
         </div>
+
+
+
+{viewers.length > 0 && (
+  <div style={{ position: 'relative', display: 'inline-block', marginTop: '6px' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        cursor: 'pointer',
+      }}
+      onClick={() => setShowViewerList(!showViewerList)}
+      onMouseEnter={() => setShowViewerList(true)}
+      onMouseLeave={() => setShowViewerList(false)}
+    >
+      <div style={{ display: 'flex', marginRight: '4px' }}>
+        {viewers.slice(0, 3).map((v, i) => (
+          <div
+            key={v.userId}
+            style={{
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              background: '#0a3347',
+              border: '2px solid #00c8b4',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '9px',
+              fontWeight: 700,
+              color: '#00c8b4',
+              marginLeft: i > 0 ? '-8px' : 0,
+              position: 'relative',
+              overflow: 'hidden',
+              animation: 'pulse-ring 2s infinite ease-in-out',
+            }}
+          >
+            {v.avatar ? (
+              <img
+                src={v.avatar}
+                alt={v.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            ) : (
+              (v.name?.[0] || '?').toUpperCase()
+            )}
+          </div>
+        ))}
+      </div>
+
+      <span style={{ fontSize: '11px', color: '#00c8b4' }}>
+        {viewers.length === 1
+          ? `You  are  here`
+          : `${viewers.length-1} others viewing`}
+      </span>
+    </div>
+
+    {showViewerList && (
+      <div
+        style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          marginTop: '6px',
+          background: '#051e2e',
+          border: '1px solid #0e3347',
+          borderRadius: '10px',
+          padding: '8px',
+          minWidth: '180px',
+          zIndex: 30,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+        }}
+      >
+        <p
+          style={{
+            fontSize: '10px',
+            fontWeight: 600,
+            color: '#2a6070',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            padding: '4px 6px',
+            marginBottom: '4px',
+          }}
+        >
+          Currently viewing
+        </p>
+
+        {viewers.map((v) => (
+          <div
+            key={v.userId}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px',
+            }}
+          >
+            <div
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: '#0a3347',
+                border: '2px solid #00c8b4',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: 700,
+                color: '#00c8b4',
+                overflow: 'hidden',
+                flexShrink: 0,
+                animation: 'pulse-ring 2s infinite ease-in-out',
+              }}
+            >
+              {v.avatar ? (
+                <img
+                  src={v.avatar}
+                  alt={v.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                (v.name?.[0] || '?').toUpperCase()
+              )}
+            </div>
+
+            <span
+              style={{
+                fontSize: '13px',
+                color: '#c0e8e4',
+              }}
+            >
+              {v.name}
+            </span>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
 
         
         <div style={M.body}>

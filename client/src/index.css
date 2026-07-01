@@ -29,3 +29,25 @@ input {
 .collabflow-tour .driver-popover-close-btn {
   color: #3a7080;
 }
+
+.live-avatar {
+  animation: pulse-ring 2s infinite ease-in-out;
+}
+
+.live-avatar::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 200, 180, 0.5);
+  animation: pulse-ring 2s infinite;
+  pointer-events: none;
+}
+@keyframes pulse-ring {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 200, 180, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 200, 180, 0);
+  }
+}
