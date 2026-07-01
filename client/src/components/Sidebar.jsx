@@ -86,17 +86,9 @@ export default function Sidebar({ onClose }) {
             CollabFlow
           </span>
         </div>
-        {/* Close button — visible only below 720px */}
-        <button
-          onClick={onClose}
-          className="flex xs:hidden"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a7080' }}
-        >
-          <X size={18} />
-        </button>
+      
       </div>
 
-      {/* ── Workspace switcher ── */}
       <div style={{ padding: '0.75rem', borderBottom: '1px solid #0e3347', position: 'relative' }}>
         <p style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', paddingLeft: '4px' }}>
           Workspace
