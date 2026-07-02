@@ -44,18 +44,18 @@ export const useUpdateTask = (workspaceId, projectId) => {
 export const useMoveTask = (workspaceId, projectId) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ taskId, status, order }) =>
+    mutationFn: ({ taskId, status, order ,reason}) =>
       fetchClient(`/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/move`, {
         method: 'PUT',
-        body: JSON.stringify({ status, order }),
+        body: JSON.stringify({ status, order, reason }),
       }),
     
-    onMutate: async ({ taskId, status, order }) => {
+    onMutate: async ({ taskId, status, order, reason }) => {
       await queryClient.cancelQueries({ queryKey: ['tasks', projectId] });
       const previous = queryClient.getQueryData(['tasks', projectId]);
 
       queryClient.setQueryData(['tasks', projectId], (old) =>
-        old?.map((t) => (t._id === taskId ? { ...t, status, order } : t))
+        old?.map((t) => (t._id === taskId ? { ...t, status, order, reason } : t))
       );
 
       return { previous };

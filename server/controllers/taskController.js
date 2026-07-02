@@ -119,34 +119,55 @@ export const updateTask = async (req, res) => {
 };
 
 export const moveTask = async (req, res) => {
-  const { status, order } = req.body;
-  const old = await Task.findById(req.params.taskId);
+  const { status, order, reason } = req.body;
 
-  const task = await Task.findByIdAndUpdate(
-    req.params.taskId,
-    { status, order },
-    { returnDocument: 'after' }
-  ).populate('assignee', 'name email avatar');
-
+  const task = await Task.findById(req.params.taskId);
   if (!task) return res.status(404).json({ message: 'Task not found' });
 
-  if (old.status !== status) {
-    await Activity.create({
-      task: task._id,
-      project: task.project,
-      user: req.user.id,
-      type: 'status_changed',
-      meta: { from: old.status, to: status },
-    });
+  const statusRank = { todo: 0, 'in-progress': 1, done: 2 };
+  const isRegression = statusRank[status] < statusRank[task.status];
+
+  if (isRegression && !reason?.trim()) {
+    return res.status(400).json({ message: 'A reason is required when moving a task backward', needsReason: true });
   }
 
-  getIO().to(`project:${task.project}`).emit('task:moved', task);
-  res.json(task);
+  const oldStatus = task.status;
+  task.status = status;
+  task.order = order;
+  await task.save();
+
+  const populated = await task.populate('assignee', 'name email avatar');
+
+  await Activity.create({
+    task: task._id,
+    project: task.project,
+    user: req.user.id,
+    type: 'status_changed',
+    meta: { from: oldStatus, to: status },
+    reason: isRegression ? reason.trim() : '',
+  });
+
+  getIO().to(`project:${task.project}`).emit('task:moved', populated);
+  res.json(populated);
 };
 
 export const deleteTask = async (req, res) => {
+  const { reason } = req.body;
+  if (!reason?.trim()) {
+    return res.status(400).json({ message: 'A reason is required to delete a task', needsReason: true });
+  }
+
   const task = await Task.findByIdAndDelete(req.params.taskId);
   if (!task) return res.status(404).json({ message: 'Task not found' });
+
+  await Activity.create({
+    task: task._id,
+    project: task.project,
+    user: req.user.id,
+    type: 'task_deleted',
+    meta: { title: task.title },
+    reason: reason.trim(),
+  });
 
   getIO().to(`project:${task.project}`).emit('task:deleted', { _id: task._id, project: task.project });
   res.json({ message: 'Task deleted' });

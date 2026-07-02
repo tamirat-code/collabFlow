@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import ReasonPromptModal from '../modals/ReasonPromptModal';
+
 import {
   DndContext,
   DragOverlay,
@@ -15,81 +17,61 @@ import { useRealtimeTasks } from '../../hooks/useRealtimeTasks';
 import FilterBar from '../FilterBar';
 
 const STATUSES = ['todo', 'in-progress', 'done'];
-
 const EMPTY_FILTERS = { search: '', priority: '', assignee: '', status: '', overdue: false };
 
 export default function KanbanBoard({ workspaceId, projectId }) {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const { data: tasks = [], isLoading } = useTasks(workspaceId, projectId, filters);
   const { mutate: moveTask } = useMoveTask(workspaceId, projectId);
-
+  const [pendingMove, setPendingMove] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
+  const statusRank = { todo: 0, 'in-progress': 1, done: 2 };
 
   useRealtimeTasks(projectId);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  
   const getTaskById = (id) => tasks.find((t) => t._id === id);
 
   const getTasksByStatus = (status) =>
-    tasks
-      .filter((t) => t.status === status)
-      .sort((a, b) => a.order - b.order);
+    tasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order);
 
-0
   const handleDragStart = ({ active }) => {
     const task = getTaskById(active.id);
     setActiveTask(task || null);
   };
 
- 
-  const handleDragEnd = ({ active, over }) => {
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
     setActiveTask(null);
     if (!over) return;
 
-    const draggedTask = getTaskById(active.id);
-    if (!draggedTask) return;
+    const activeTaskObj = tasks.find((t) => t._id === active.id);
+    if (!activeTaskObj) return;
 
-    const overId = over.id;
+    let targetStatus = over.id;
+    let targetOrder;
 
-    let newStatus = draggedTask.status;
-    let newOrder = draggedTask.order;
-
-    
-    if (STATUSES.includes(overId)) {
-      newStatus = overId;
-
-      const columnTasks = getTasksByStatus(overId);
-      newOrder = columnTasks.length;
+    if (STATUSES.includes(over.id)) {
+      const columnTasks = getTasksByStatus(over.id);
+      targetOrder = columnTasks.length;
+    } else {
+      const overTask = tasks.find((t) => t._id === over.id);
+      if (!overTask) return;
+      targetStatus = overTask.status;
+      targetOrder = overTask.order;
     }
 
-    
-    else {
-      const targetTask = getTaskById(overId);
-      if (!targetTask) return;
+    if (activeTaskObj.status === targetStatus && activeTaskObj.order === targetOrder) return;
 
-      newStatus = targetTask.status;
-      newOrder = targetTask.order;
-    }
-
-  
-    if (
-      draggedTask.status === newStatus &&
-      draggedTask.order === newOrder
-    ) {
+    if (statusRank[targetStatus] < statusRank[activeTaskObj.status]) {
+      setPendingMove({ taskId: activeTaskObj._id, status: targetStatus, order: targetOrder });
       return;
     }
 
-    moveTask({
-      taskId: draggedTask._id,
-      status: newStatus,
-      order: newOrder,
-    });
+    moveTask({ taskId: activeTaskObj._id, status: targetStatus, order: targetOrder });
   };
 
   if (isLoading) {
@@ -102,47 +84,56 @@ export default function KanbanBoard({ workspaceId, projectId }) {
 
   return (
     <>
-    <FilterBar workspaceId={workspaceId} filters={filters} onChange={setFilters} />
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-     
-      <div
-        data-tour="kanban-board" className="flex flex-col gap-4 md:flex-row md:items-start md:overflow-x-auto md:pb-4"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        {STATUSES.map((status) => (
-          <div
-            key={status}
-            data-tour={status === "todo" ? "kanban-column-todo" : undefined}
-            className="w-full md:w-[280px] md:flex-shrink-0"
-          >
-            <KanbanColumn
-              status={status}
-              tasks={getTasksByStatus(status)}
-              workspaceId={workspaceId}
-              projectId={projectId}
-            />
-          </div>
-        ))}
-      </div>
+      <FilterBar workspaceId={workspaceId} filters={filters} onChange={setFilters} />
 
-      
-      <DragOverlay>
-        {activeTask && (
-          <div className="rotate-2">
-            <TaskCard
-              task={activeTask}
-              workspaceId={workspaceId}
-              projectId={projectId}
-            />
-          </div>
-        )}
-      </DragOverlay>
-    </DndContext>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div
+          data-tour="kanban-board"
+          className="flex flex-col gap-4 md:flex-row md:items-start md:overflow-x-auto md:pb-4"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {STATUSES.map((status) => (
+            <div
+              key={status}
+              data-tour={status === 'todo' ? 'kanban-column-todo' : undefined}
+              className="w-full md:w-[280px] md:flex-shrink-0"
+            >
+              <KanbanColumn
+                status={status}
+                tasks={getTasksByStatus(status)}
+                workspaceId={workspaceId}
+                projectId={projectId}
+              />
+            </div>
+          ))}
+        </div>
+
+        <DragOverlay>
+          {activeTask && (
+            <div className="rotate-2">
+              <TaskCard task={activeTask} workspaceId={workspaceId} projectId={projectId} />
+            </div>
+          )}
+        </DragOverlay>
+      </DndContext>
+
+     
+      {pendingMove && (
+        <ReasonPromptModal
+          title="Moving task backward"
+          subtitle="This task is going back a stage. Add a quick note so the team knows why."
+          onConfirm={(reason) => {
+            moveTask({ ...pendingMove, reason });
+            setPendingMove(null);
+          }}
+          onCancel={() => setPendingMove(null)}
+        />
+      )}
     </>
   );
 }

@@ -97,11 +97,11 @@ function fileIcon(mimeType) {
   if (mimeType.startsWith('image/')) return <Image size={16} color="#00c8b4" />;
   return <FileText size={16} color="#3a7080" />;
 }
-
 function activityLabel(act) {
   switch (act.type) {
     case 'created':          return 'created this task';
     case 'status_changed':   return `moved from ${act.meta.from} → ${act.meta.to}`;
+    case 'task_deleted':     return `deleted this task`;
     case 'priority_changed': return `changed priority from ${act.meta.from} → ${act.meta.to}`;
     case 'assigned':         return 'changed assignee';
     case 'due_date_changed': return `set due date to ${new Date(act.meta.to).toLocaleDateString()}`;
@@ -524,16 +524,21 @@ export default function TaskDetailModal({ task, workspaceId, projectId, onClose 
               {!loadingActivity && activity.length === 0 && <p style={M.empty}>No activity yet.</p>}
               {activity.map((a) => (
                 <div key={a._id} style={M.actItem}>
-                  <div style={{ ...M.avatar, width: '24px', height: '24px', fontSize: '10px' }}>
-                    {a.user?.name?.[0]?.toUpperCase()}
-                  </div>
-                  <div>
-                    <p style={M.actText}>
-                      <span style={M.actUser}>{a.user?.name}</span> {activityLabel(a)}
-                    </p>
-                    <p style={M.actTime}>{formatTime(a.createdAt)}</p>
-                  </div>
-                </div>
+    <div style={{ ...M.avatar, width: '24px', height: '24px', fontSize: '10px' }}>
+      {a.user?.name?.[0]?.toUpperCase()}
+    </div>
+    <div>
+      <p style={M.actText}>
+        <span style={M.actUser}>{a.user?.name}</span> {activityLabel(a)}
+      </p>
+      {a.reason && (
+        <p style={{ fontSize: '12px', color: '#c0e8e4', background: '#071520', border: '1px solid #0e3347', borderRadius: '6px', padding: '6px 10px', marginTop: '4px', fontStyle: 'italic' }}>
+          "{a.reason}"
+        </p>
+      )}
+      <p style={M.actTime}>{formatTime(a.createdAt)}</p>
+    </div>
+  </div>
               ))}
             </>
           )}
