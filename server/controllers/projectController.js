@@ -2,6 +2,7 @@ import Project from '../models/Project.js';
 import Task from '../models/Task.js';
 import { notify } from '../utils/Notify.js';
 import { tasksToCSV, tasksToJSON } from '../utils/csvConverter.js';
+import Activity from '../models/Activity.js';
 
 export const createProject = async (req, res) => {
   const { name, description } = req.body;
@@ -185,4 +186,50 @@ export const exportProject = async (req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
   return res.send(csv);
+};
+// server/controllers/projectController.js
+export const getProjectTimeline = async (req, res) => {
+  const { projectId } = req.params;
+
+  const tasks = await Task.find({ project: projectId }).select('_id title createdAt');
+  const taskIds = tasks.map(t => t._id);
+
+  const activities = await Activity.find({ task: { $in: taskIds } })
+    .sort('createdAt')
+    .populate('user', 'name');
+
+  // Build initial snapshot (tasks in their created state)
+  const taskMap = {};
+  tasks.forEach(t => {
+    taskMap[t._id] = { _id: t._id, title: t.title, status: 'todo', order: 0 };
+  });
+
+  // Build a sequence of events with resulting board state
+  const events = [];
+  const workingState = { ...taskMap };
+
+  for (const act of activities) {
+    if (act.type === 'created') {
+      workingState[act.task] = { ...workingState[act.task], status: 'todo' };
+    }
+    if (act.type === 'status_changed' && workingState[act.task]) {
+      workingState[act.task] = { ...workingState[act.task], status: act.meta.to };
+    }
+    if (act.type === 'task_deleted') {
+      delete workingState[act.task];
+    }
+
+    events.push({
+      timestamp: act.createdAt,
+      type: act.type,
+      user: act.user?.name,
+      taskTitle: workingState[act.task]?.title || act.meta?.title || 'a task',
+      snapshot: Object.values(workingState).map(t => ({ ...t })),
+    });
+  }
+
+  res.json({
+    initialState: Object.values(taskMap).map(t => ({ ...t, status: 'todo' })),
+    events,
+  });
 };

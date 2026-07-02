@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Trash2, MoreHorizontal, Download, FileJson, FileText } from 'lucide-react';
+import { Trash2,Ghost, MoreHorizontal, Download, FileJson, FileText } from 'lucide-react';
 import { useProjects, useDeleteProject, useExportProject } from '../hooks/useProjects';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
+import GhostMode from './GhostMode';
 
 export default function ProjectHeader({ workspaceId, projectId }) {
   const { data: projects } = useProjects(workspaceId);
@@ -11,7 +12,7 @@ export default function ProjectHeader({ workspaceId, projectId }) {
   const { isAdmin, canEdit } = useWorkspaceRole();
   const { exportProject, exporting } = useExportProject(workspaceId, projectId);
   const [showMenu, setShowMenu] = useState(false);
-
+ const [showGhost, setShowGhost] = useState(false);
   const project = projects?.find((p) => p._id === projectId);
   if (!project) return null;
 
@@ -32,7 +33,17 @@ export default function ProjectHeader({ workspaceId, projectId }) {
           <p style={{ fontSize: '13px', color: '#3a7080' }}>{project.description}</p>
         )}
       </div>
-
+   <button
+  onClick={() => setShowGhost(true)}
+  style={{
+    display: 'flex', alignItems: 'center', gap: '6px',
+    padding: '7px 14px', background: 'rgba(0,200,180,0.08)',
+    border: '1px solid rgba(0,200,180,0.2)', borderRadius: '20px',
+    color: '#00c8b4', fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+  }}
+>
+  <Ghost size={13} /> Ghost Mode
+</button>
       <div style={{ position: 'relative' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
@@ -109,6 +120,10 @@ export default function ProjectHeader({ workspaceId, projectId }) {
           </div>
         )}
       </div>
+    
+      {showGhost && (
+  <GhostMode workspaceId={workspaceId} projectId={projectId} onClose={() => setShowGhost(false)} />
+)}
     </div>
   );
 }
