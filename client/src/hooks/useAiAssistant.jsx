@@ -17,14 +17,13 @@ export const useSendMessage = (workspaceId) => {
         method: 'POST',
         body: JSON.stringify({ content }),
       }),
-    onSuccess: (data, content) => {
-      
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['ai-conversation', workspaceId] });
-      if (data.actions?.some(a => a.type === 'create_tasks')) {
-        data.actions.forEach(a => {
+      data.actions?.forEach((a) => {
+        if (a.projectId) {
           queryClient.invalidateQueries({ queryKey: ['tasks', a.projectId] });
-        });
-      }
+        }
+      });
     },
   });
 };

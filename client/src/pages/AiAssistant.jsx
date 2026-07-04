@@ -124,11 +124,15 @@ export default function AIAssistant() {
                 }}>
                   {m.content}
                 </div>
-                {m.actions?.map((a, ai) => a.type === 'create_tasks' && (
-                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '12px', color: '#00c8b4' }}>
-                    <CheckCircle2 size={13} /> Added {a.count} task{a.count !== 1 ? 's' : ''} to the board
-                  </div>
-                ))}
+                {m.actions?.map((a, ai) => (
+  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '12px', color: '#00c8b4' }}>
+    <CheckCircle2 size={13} />
+    {a.type === 'create_tasks' && `Added ${a.count} task${a.count !== 1 ? 's' : ''} to the board`}
+    {a.type === 'move_task'    && `Moved "${a.title}" from ${a.from} → ${a.to}`}
+    {a.type === 'assign_task'  && `Assigned "${a.title}" to ${a.assigneeName}`}
+    {a.type === 'delete_task'  && `Deleted "${a.title}"`}
+  </div>
+))}
               </div>
             </div>
           ))}
