@@ -15,6 +15,7 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import http from 'http';
 import { initSocket } from './socket.js';
 import { startReminderJob } from './utils/RemainderJob.js';
+import aiAssistantRoutes from './routes/aiAssistantRoutes.js';
 import {
   generalLimiter,
   authLimiter,
@@ -58,7 +59,7 @@ app.use('/api/auth',          authRoutes);
 app.use('/api/workspaces',    workspaceRoutes);
 app.use('/api/billing',       billingRoutes);
 app.use('/api/notifications', notificationRoutes);
-
+app.use('/api/ai-assistant', aiAssistantRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.message);

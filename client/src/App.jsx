@@ -15,7 +15,7 @@ import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
 import Analytics from './pages/Analytics';
 import AppLayout from './components/AppLayout';
-
+import AIAssistant from './pages/AiAssistant';
 
 export default function App() {
   return (
@@ -37,6 +37,8 @@ export default function App() {
     <AppLayout><Dashboard /></AppLayout>
   } />
 
+
+<Route path="/ai-assistant" element={<AppLayout><AIAssistant /></AppLayout>} />
   <Route path="/analytics" element={
     <AppLayout><Analytics /></AppLayout>
   } />

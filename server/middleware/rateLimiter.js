@@ -50,3 +50,11 @@ export const billingLimiter = rateLimit({
   legacyHeaders: false,
   message: message('billing requests'),
 });
+
+export const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many AI requests. Please try again later.' },
+});

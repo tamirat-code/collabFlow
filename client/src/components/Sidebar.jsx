@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutGrid, Plus, ChevronDown, LogOut, UserPlus,
-  Zap, X, BarChart2, Settings, FolderKanban,
+  Zap, X, BarChart2, Settings, FolderKanban,Sparkles
 } from 'lucide-react';
 import { useWorkspaces, useCreateWorkspace } from '../hooks/useWorkspaces';
 import { useProjects } from '../hooks/useProjects';
@@ -173,7 +173,7 @@ const { role: workspaceRole } = useWorkspaceRole();
         )}
       </div>
 
-      {/* ── Navigation ── */}
+     
       <div style={{ padding: '0.75rem', borderBottom: '1px solid #0e3347' }}>
         <p style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px', paddingLeft: '4px' }}>
           Navigate
@@ -194,9 +194,15 @@ const { role: workspaceRole } = useWorkspaceRole();
         >
           <BarChart2 size={15} /> Analytics
         </button>
+        <button
+  style={navBtn(location.pathname === '/ai-assistant')}
+  onClick={() => { navigate('/ai-assistant'); onClose?.(); }}
+>
+  <Sparkles size={15} /> AI Assistant
+</button>
       </div>
-
-      {/* ── Projects ── */}
+     
+   
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: '4px' }}>
           <span style={{ fontSize: '10px', fontWeight: 600, color: '#2a6070', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
