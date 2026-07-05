@@ -60,7 +60,7 @@ export const startReminderJob = () => {
 
 
     } catch {
-     console.log("error happened");
+    e.printStackTrace();
     }
   });
 
