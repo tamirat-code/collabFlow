@@ -6,11 +6,7 @@ import useAuthStore from '../store/authStore';
 export const useProjects = (workspaceId) => {
   return useQuery({
     queryKey: ['projects', workspaceId],
-    
-queryFn: async () => {
-  await new Promise(r => setTimeout(r, 2000)); 
-  return fetchClient(`/workspaces/${workspaceId}/projects`);
-},
+    queryFn: () => fetchClient(`/workspaces/${workspaceId}/projects`),
     enabled: !!workspaceId,
   });
 };

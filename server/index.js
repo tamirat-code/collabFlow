@@ -65,7 +65,9 @@ app.use((err, req, res, next) => {
   console.error(err.message);
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
 });
-
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'CollabFlow API is running' });
+});
 const httpServer = http.createServer(app);
 initSocket(httpServer);
 
