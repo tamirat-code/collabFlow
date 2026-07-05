@@ -9,10 +9,12 @@ export const getSocket = () => {
 
   const token = useAuthStore.getState().accessToken;
 
-  socket = io('http://localhost:5000', {
-    auth: { token },
-    autoConnect: false,
-  });
+ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+
+socket = io(SOCKET_URL, {
+  auth: { token },
+  autoConnect: false,
+});
 
 
   socket.on('connect', () => { isConnecting = false; });

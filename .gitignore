@@ -1,5 +1,5 @@
 server/.env
 .env
-server/.env
+client/.env
 .env
 node_modules/
