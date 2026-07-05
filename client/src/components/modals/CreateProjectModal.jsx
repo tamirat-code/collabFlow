@@ -5,6 +5,7 @@ import { useCreateProject } from '../../hooks/useProjects';
 import { projectSchema } from '../../lib/validationSchemas';
 import useWorkspaceStore from '../../store/workspaceStore';
 import M from '../../styles/ModalStyles';
+import Spinner from '../Spinner';
 
 export default function CreateProjectModal({ workspaceId, onClose }) {
   const { mutate, isPending, error } = useCreateProject(workspaceId);
@@ -56,7 +57,7 @@ export default function CreateProjectModal({ workspaceId, onClose }) {
           </div>
 
           <button type="submit" disabled={isPending} style={{ ...M.btn, opacity: isPending ? 0.6 : 1 }}>
-            {isPending ? 'Creating...' : 'Create Project'}
+            {isPending ? (<><Spinner size={14} color="#00c8b4" /> Creating...</>) : 'Create Project'}
           </button>
         </form>
       </div>

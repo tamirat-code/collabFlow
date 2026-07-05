@@ -11,6 +11,8 @@ import {
 import { useBillingInfo } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
 import useToastStore from '../store/toastStore';
+import Spinner from '../components/Spinner';
+
 
 const S = {
   page:        { minHeight: '100vh', background: '#020f18' },
@@ -400,13 +402,9 @@ export default function Profile() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              style={{ ...S.updateBtn, opacity: saving ? 0.6 : 1 }}
-            >
-              {saving ? 'Updating...' : 'Update Profile'}
-            </button>
+           <button type="submit" disabled={saving} style={{ ...S.updateBtn, opacity: saving ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+  {saving ? (<><Spinner size={14} color="#020f18" /> Updating...</>) : 'Update Profile'}
+</button>
           </form>
         </div>
       </div>
@@ -470,13 +468,10 @@ export default function Profile() {
               {pwErrors.confirmPw && <p style={S.fieldErr}>{pwErrors.confirmPw}</p>}
             </div>
 
-            <button
-              type="submit"
-              disabled={savingPw}
-              style={{ ...S.updateBtn, opacity: savingPw ? 0.6 : 1 }}
-            >
-              {savingPw ? 'Updating...' : 'Update Password'}
-            </button>
+           <button type="submit" disabled={savingPw} style={{ ...S.updateBtn, opacity: savingPw ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+  {savingPw ? (<><Spinner size={14} color="#020f18" /> Updating...</>) : 'Update Password'}
+</button>
+
           </form>
         </div>
       </div>
@@ -510,13 +505,9 @@ export default function Profile() {
             )}
 
             <div style={S.btnRow}>
-              <button
-                style={{ ...S.btnDanger, opacity: deleting ? 0.7 : 1 }}
-                onClick={handleDelete}
-                disabled={deleting || (user?.hasPassword && !deletePw)}
-              >
-                {deleting ? 'Deleting...' : 'Yes, delete my account'}
-              </button>
+             <button style={{ ...S.btnDanger, opacity: deleting ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={handleDelete} disabled={deleting || (user?.hasPassword && !deletePw)}>
+  {deleting ? (<><Spinner size={13} color="#f87171" /> Deleting...</>) : 'Yes, delete my account'}
+</button>
               <button style={S.btnGhost} onClick={() => { setShowDelete(false); setDeletePw(''); }}>
                 Cancel
               </button>

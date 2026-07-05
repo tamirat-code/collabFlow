@@ -13,6 +13,8 @@ import CreateWorkspaceModal from './modals/CreateWorkspaceModal';
 import CreateProjectModal from './modals/CreateProjectModal';
 import InviteMemberModal from './modals/InviteMemberModal';
 import NotificationBell from './NotificationBell';
+import SidebarSkeleton from './skeletons/SidebarSkeleton';
+import { SkeletonBlock } from './Skeleton';
 
 export default function Sidebar({ onClose }) {
   const navigate = useNavigate();
@@ -221,9 +223,14 @@ const { role: workspaceRole } = useWorkspaceRole();
           )}
         </div>
 
-        {loadingProjects && (
-          <p style={{ fontSize: '12px', color: '#2a6070', padding: '4px 8px' }}>Loading...</p>
-        )}
+      
+{loadingProjects && (
+  <>
+    {[1, 2].map(i => (
+      <SkeletonBlock key={i} width="100%" height="34px" radius="8px" style={{ marginBottom: '6px' }} />
+    ))}
+  </>
+)}
 
         {!loadingProjects && projects?.length === 0 && (
           <div style={{ padding: '12px 8px', textAlign: 'center' }}>

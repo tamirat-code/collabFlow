@@ -9,6 +9,8 @@ import { useTasks } from '../hooks/useTasks';
 import OnboardingTour from '../components/onboardingTour';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
+
 
 function StatCard({ icon: Icon, iconColor, iconBg, label, value, sub, subColor }) {
   return (
@@ -150,9 +152,8 @@ export default function Dashboard() {
     <div style={{ padding: '1.5rem' }}>
       {showTour && <OnboardingTour onDone={() => setTourDone(true)} />}
 
-      {isLoading && (
-        <div className="flex items-center justify-center h-full" style={{ color: '#3a7080' }}>Loading...</div>
-      )}
+      {isLoading && <DashboardSkeleton />}
+
 
       {!isLoading && workspaces?.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-center px-4">

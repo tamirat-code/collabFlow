@@ -5,6 +5,7 @@ import { useCreateTask } from '../../hooks/useTasks';
 import { useWorkspace } from '../../hooks/useWorkspaces';
 import { taskSchema } from '../../lib/validationSchemas';
 import M from '../../styles/ModalStyles';
+import Spinner from '../Spinner';
 
 export default function CreateTaskModal({ workspaceId, projectId, defaultStatus = 'todo', onClose }) {
   const { mutate, isPending, error } = useCreateTask(workspaceId, projectId);
@@ -86,7 +87,7 @@ export default function CreateTaskModal({ workspaceId, projectId, defaultStatus 
           </div>
 
           <button type="submit" disabled={isPending} style={{ ...M.btn, opacity: isPending ? 0.6 : 1 }}>
-            {isPending ? 'Creating...' : 'Create Task'}
+            {isPending ? (<><Spinner size={14} color="#00c8b4" /> Creating...</>) : 'Create Task'}
           </button>
         </form>
       </div>

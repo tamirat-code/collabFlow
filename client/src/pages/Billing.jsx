@@ -4,6 +4,7 @@ import { Check, Zap, Building2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { useBillingInfo, useBillingSuccessHandler, useCreateCheckout, usePortal } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
+import spinner from '../components/Spinner';
 
 const PLANS = [
   {
@@ -103,7 +104,7 @@ if (!activeWorkspaceId) {
             </span>
             {currentPlan !== 'free' && isAdmin && (
   <button style={S.portal} onClick={() => portal()} disabled={portalPending}>
-    {portalPending ? 'Opening...' : <><ExternalLink size={12} /> Manage subscription</>}
+    {portalPending ? (<><Spinner size={12} color="#00c8b4" /> Opening...</>) : <><ExternalLink size={12} /> Manage subscription</>}
   </button>
 )}
           </div>
@@ -122,7 +123,7 @@ if (!activeWorkspaceId) {
             let btnStyle = disabled ? S.btnDis : (isHighlight ? S.btnHL : S.btn);
             let btnLabel = isCurrent ? '✓ Current plan' : `Upgrade to ${plan.name}`;
             if (plan.key === 'free') btnLabel = 'Free forever';
-            if (isThisPlanPending) btnLabel = 'Redirecting...';
+            if (isThisPlanPending) btnLabel = (<><Spinner size={13} color="#020f18" /> Redirecting...</>);
 
             const handleCheckout = (planKey) => {
               setPendingPlan(planKey);

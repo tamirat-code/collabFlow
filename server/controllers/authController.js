@@ -183,12 +183,11 @@ export const refresh = async (req, res) => {
   res.json({ accessToken });
 };
 
-
 export const logout = (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   });
   res.json({ message: 'Logged out' });
 };
@@ -334,7 +333,7 @@ export const deleteAccount = async (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   });
 
   sendEmail({

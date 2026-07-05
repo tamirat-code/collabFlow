@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useInviteMember } from '../../hooks/useWorkspaces';
 import { inviteSchema } from '../../lib/validationSchemas';
 import M from '../../styles/ModalStyles';
+import Spinner from '../Spinner';
 
 export default function InviteMemberModal({ workspaceId, onClose }) {
   const { mutate, isPending, error, isSuccess } = useInviteMember(workspaceId);
@@ -42,7 +43,7 @@ export default function InviteMemberModal({ workspaceId, onClose }) {
 
           <div style={{ marginBottom: '0.5rem' }}>
             <label style={M.label}>Role</label>
-            {/* member is first so it's the visual default — matches defaultValues */}
+            
             <select {...register('role')} style={M.input}>
               <option value="member">Member</option>
               <option value="viewer">Viewer</option>
@@ -51,7 +52,7 @@ export default function InviteMemberModal({ workspaceId, onClose }) {
           </div>
 
           <button type="submit" disabled={isPending} style={{ ...M.btn, opacity: isPending ? 0.6 : 1 }}>
-            {isPending ? 'Inviting...' : 'Send Invite'}
+            {isPending ? (<><Spinner size={14} color="#00c8b4" /> Inviting...</>) : 'Send Invite'}
           </button>
         </form>
       </div>

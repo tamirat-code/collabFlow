@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ReasonPromptModal from '../modals/ReasonPromptModal';
-
+import KanbanSkeleton from '../skeletons/KanbanSkeleton';
 import {
   DndContext,
   DragOverlay,
@@ -74,13 +74,7 @@ export default function KanbanBoard({ workspaceId, projectId }) {
     moveTask({ taskId: activeTaskObj._id, status: targetStatus, order: targetOrder });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
-        Loading tasks...
-      </div>
-    );
-  }
+if (isLoading) return <KanbanSkeleton />;
 
   return (
     <>

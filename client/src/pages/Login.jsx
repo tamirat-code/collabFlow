@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLogin, useRegister } from '../hooks/useAuth';
 import { loginSchema, registerSchema } from '../lib/validationSchemas';
 import useAuthStore from '../store/authStore';
+import Spinner from '../components/Spinner';
+
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -218,7 +221,7 @@ const user = useAuthStore((s) => s.user);
                   </div>
 
                   <NeonButton type="submit" disabled={loginPending}>
-                    {loginPending ? 'Signing in...' : 'Login'}
+                    {loginPending ? (<><Spinner size={14} color="#00c8b4" /> Signing in...</>) : 'Login'}
                   </NeonButton>
                 </form>
 
@@ -365,7 +368,7 @@ const user = useAuthStore((s) => s.user);
   </div>
 
   <NeonButton type="submit" disabled={registerPending}>
-    {registerPending ? 'Creating account...' : 'Sign up'}
+    {registerPending ? (<><Spinner size={14} color="#00c8b4" /> Creating account...</>) : 'Sign up'}
   </NeonButton>
 </form>
 

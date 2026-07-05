@@ -6,6 +6,7 @@ import { workspaceSchema } from '../../lib/validationSchemas';
 import useWorkspaceStore from '../../store/workspaceStore';
 import M from '../../styles/ModalStyles';
 import { useQueryClient } from '@tanstack/react-query';
+import Spinner from '../Spinner';
 
 export default function CreateWorkspaceModal({ onClose }) {
 const queryClient = useQueryClient();
@@ -52,7 +53,7 @@ const queryClient = useQueryClient();
           </div>
 
           <button type="submit" disabled={isPending} style={{ ...M.btn, opacity: isPending ? 0.6 : 1 }}>
-            {isPending ? 'Creating...' : 'Create Workspace'}
+            {isPending ? (<><Spinner size={14} color="#00c8b4" /> Creating...</>) : 'Create Workspace'}
           </button>
         </form>
       </div>

@@ -7,6 +7,7 @@ import {
 import { useAnalytics } from '../hooks/useAnalytics';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import AnalyticsSkeleton from '../components/skeletons/AnalyticsSkeleton';
 
 const COLORS = {
   todo:          '#3a7080',
@@ -72,13 +73,7 @@ export default function Analytics() {
     { name: 'High',   value: data.byPriority.high,   color: COLORS.high },
   ] : [];
 
-  if (isLoading) {
-    return (
-      <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 size={28} color="#00c8b4" className="animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <div style={S.page}><div style={S.inner}><AnalyticsSkeleton /></div></div>;
 
   return (
     <div style={S.page}>
