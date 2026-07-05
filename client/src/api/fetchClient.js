@@ -69,13 +69,13 @@ export const fetchClient = async (endpoint, options = {}) => {
     return;
   }
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Something went wrong' }));
-    const err = new Error(error.message || 'Something went wrong');
-    err.data = error;
-    err.status = res.status;
-    throw err;
-  }
+if (!res.ok) {
+  const error = await res.json().catch(() => ({ message: 'Something went wrong' }));
+  const err = new Error(error.message || 'Something went wrong');
+  err.data = error;
+  err.status = res.status;
+  throw err;
+}
 
   return res.json();
 };

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, Trash2, Loader2, CheckCircle2, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, Send, Trash2, Loader2, CheckCircle2, User, Zap } from 'lucide-react';
 import { useConversation, useSendMessage, useClearConversation } from '../hooks/useAiAssistant';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useMe } from '../hooks/useAuth';
@@ -11,10 +12,42 @@ const SUGGESTIONS = [
   'Summarize what my team has been working on',
 ];
 
+function UpgradeScreen({ message }) {
+  const navigate = useNavigate();
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
+      <div style={{
+        width: '56px', height: '56px', borderRadius: '16px',
+        background: 'linear-gradient(135deg, #00c8b4, #009e8e)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem',
+      }}>
+        <Sparkles size={26} color="#fff" />
+      </div>
+      <p style={{ fontSize: '17px', fontWeight: 600, color: '#e0f5f2', marginBottom: '8px' }}>
+        AI Assistant is a Pro feature
+      </p>
+      <p style={{ fontSize: '13px', color: '#3a7080', marginBottom: '1.5rem', maxWidth: '340px', lineHeight: 1.6 }}>
+        {message || 'Upgrade your workspace to chat with an AI assistant that knows your projects and can create tasks for you.'}
+      </p>
+      <button
+        onClick={() => navigate('/billing')}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '11px 24px', background: '#00c8b4', border: 'none',
+          borderRadius: '24px', color: '#020f18', fontSize: '13px', fontWeight: 600,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}
+      >
+        <Zap size={14} /> Upgrade plan
+      </button>
+    </div>
+  );
+}
+
 export default function AIAssistant() {
   const { activeWorkspaceId } = useWorkspaceStore();
-  const { data: convo, isLoading } = useConversation(activeWorkspaceId);
-  const { mutate: sendMessage, isPending: sending } = useSendMessage(activeWorkspaceId);
+  const { data: convo, isLoading, error: convoError } = useConversation(activeWorkspaceId);
+  const { mutate: sendMessage, isPending: sending, error: sendError } = useSendMessage(activeWorkspaceId);
   const { mutate: clearConvo } = useClearConversation(activeWorkspaceId);
   const { data: me } = useMe();
 
@@ -41,10 +74,33 @@ export default function AIAssistant() {
     }
   };
 
+  // Plan-gated — show clean upgrade screen instead of raw error
+  const isUpgradeRequired = convoError?.data?.upgradeRequired || sendError?.data?.upgradeRequired;
+
+  if (isUpgradeRequired) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#020f18' }}>
+        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #0e3347' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '10px',
+              background: 'linear-gradient(135deg, #00c8b4, #009e8e)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Sparkles size={16} color="#fff" />
+            </div>
+            <p style={{ fontSize: '15px', fontWeight: 600, color: '#e0f5f2' }}>AI Assistant</p>
+          </div>
+        </div>
+        <UpgradeScreen message={convoError?.data?.message || sendError?.data?.message} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#020f18' }}>
 
-     
+      {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '1rem 1.5rem', borderBottom: '1px solid #0e3347', flexShrink: 0,
@@ -72,7 +128,7 @@ export default function AIAssistant() {
         )}
       </div>
 
-   
+      {/* Messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
 
         {!isLoading && messages.length === 0 && (
@@ -106,7 +162,7 @@ export default function AIAssistant() {
 
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           {messages.map((m, i) => (
-            <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '1.25rem', flexDirection: m.role === 'user' ? 'row-reverse' : 'row' }}>
+            <div key={m._id || i} style={{ display: 'flex', gap: '10px', marginBottom: '1.25rem', flexDirection: m.role === 'user' ? 'row-reverse' : 'row' }}>
               <div style={{
                 width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
                 background: m.role === 'user' ? '#0a3347' : 'linear-gradient(135deg, #00c8b4, #009e8e)',
@@ -125,14 +181,14 @@ export default function AIAssistant() {
                   {m.content}
                 </div>
                 {m.actions?.map((a, ai) => (
-  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '12px', color: '#00c8b4' }}>
-    <CheckCircle2 size={13} />
-    {a.type === 'create_tasks' && `Added ${a.count} task${a.count !== 1 ? 's' : ''} to the board`}
-    {a.type === 'move_task'    && `Moved "${a.title}" from ${a.from} → ${a.to}`}
-    {a.type === 'assign_task'  && `Assigned "${a.title}" to ${a.assigneeName}`}
-    {a.type === 'delete_task'  && `Deleted "${a.title}"`}
-  </div>
-))}
+                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '12px', color: '#00c8b4' }}>
+                    <CheckCircle2 size={13} />
+                    {a.type === 'create_tasks' && `Added ${a.count} task${a.count !== 1 ? 's' : ''} to the board`}
+                    {a.type === 'move_task'    && `Moved "${a.title}" from ${a.from} → ${a.to}`}
+                    {a.type === 'assign_task'  && `Assigned "${a.title}" to ${a.assigneeName}`}
+                    {a.type === 'delete_task'  && `Deleted "${a.title}"`}
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -155,7 +211,8 @@ export default function AIAssistant() {
         </div>
       </div>
 
-            <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid #0e3347', flexShrink: 0 }}>
+      {/* Input */}
+      <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid #0e3347', flexShrink: 0 }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
           <textarea
             value={input}
