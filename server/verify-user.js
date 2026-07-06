@@ -13,7 +13,7 @@ async function verifyUser() {
     );
     
     if (user) {
-      console.log('✅ User verified:', user.email);
+      console.log('✅ User email verified successfully');
     } else {
       console.log('❌ User not found');
     }

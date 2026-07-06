@@ -16,14 +16,14 @@ passport.use(new GoogleStrategy({
   
   async (accessToken, refreshToken, profile, done) => {
     try {
-     console.log('Google profile:', profile.id, profile.emails[0].value);
+
       let user = await User.findOne({ googleId: profile.id });
 
       if (user) return done(null, user);
 
       
       user = await User.findOne({ email: profile.emails[0].value });
-  console.log('Found by email:', user);
+ 
       if (user) {
         user.googleId = profile.id;
         user.avatar = profile.photos[0].value;
@@ -39,7 +39,7 @@ passport.use(new GoogleStrategy({
         avatar:   profile.photos[0].value,
         isEmailVerified: true, // Google has already verified this email
       });
-      console.log('Created new user:', user); 
+      
 
       done(null, user);
     } catch (err) {
