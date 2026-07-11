@@ -188,30 +188,34 @@ export const sendMessage = async (req, res) => {
     const history = convo.messages.slice(-10).map(m => ({ role: m.role, content: m.content }));
 
     const rawReply = await chatWithAssistant({ messages: history, context });
+const actionMatch = rawReply.match(ACTION_REGEX);
+let actions = [];
+let cleanReply = rawReply;
 
-    const actionMatch = rawReply.match(ACTION_REGEX);
-    let actions = [];
-    let cleanReply = rawReply;
-
-    if (actionMatch) {
-      cleanReply = rawReply.replace(ACTION_REGEX, '').trim();
-
-      try {
-        const actionData = JSON.parse(actionMatch[1].trim());
-        const result = await applyAction(actionData, req.user.id);
-        if (result) actions.push(result);
-      } catch (err) {
-        console.error('Failed to parse/apply AI action:', err.message);
-        cleanReply += `\n\n(I tried to make a change but hit an error: ${err.message})`;
-      }
-    }
+if (actionMatch) {
+  cleanReply = rawReply.replace(ACTION_REGEX, '').trim();
+  try {
+    const actionData = JSON.parse(actionMatch[1].trim());
+    const result = await applyAction(actionData, req.user.id);
+    if (result) actions.push(result);
+  } catch (err) {
+    console.error('Failed to parse/apply AI action:', err.message);
+    cleanReply += `\n\n⚠️ I tried to make this change but hit an error: ${err.message}. Nothing was created — please try asking again, maybe with fewer tasks at once.`;
+  }
+} else {
+  
+  const claimsAction = /\b(created|saved|added|moved|assigned|deleted)\b.{0,40}\b(task|tasks)\b/i.test(rawReply);
+  if (claimsAction) {
+    cleanReply = rawReply + `\n\n⚠️ Note: I may have described an action without actually performing it. Please check your board — if nothing changed, try rephrasing your request more specifically (e.g. name the exact project).`;
+  }
+}
 
     convo.messages.push({ role: 'assistant', content: cleanReply, actions });
     await convo.save();
 
     res.json({ reply: cleanReply, actions, conversationId: convo._id });
   } catch (err) {
-    console.error('FULL AI ASSISTANT ERROR:', err);
+   
     res.status(500).json({ message: err.message || 'AI assistant failed' });
   }
 };
