@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Send, Trash2, Loader2, CheckCircle2, User, Zap } from 'lucide-react';
+import { Sparkles, Send, Trash2, Loader2, CheckCircle2, User, Zap,LayoutGrid } from 'lucide-react';
 import { useConversation, useSendMessage, useClearConversation } from '../hooks/useAiAssistant';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useMe } from '../hooks/useAuth';
@@ -55,6 +55,20 @@ export default function AIAssistant() {
   const scrollRef = useRef(null);
 
   const messages = convo?.messages || [];
+
+  if (!activeWorkspaceId) {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '2rem', textAlign: 'center' }}>
+      <p style={{ fontSize: '16px', fontWeight: 600, color: '#e0f5f2', marginBottom: '8px' }}>
+        Create a workspace first
+      </p>
+      <p style={{ fontSize: '13px', color: '#3a7080', marginBottom: '1.5rem', maxWidth: '320px' }}>
+        The AI Assistant needs a workspace with projects and tasks to help you with. Create one from the sidebar to get started.
+      </p>
+    </div>
+  );
+}
+
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
