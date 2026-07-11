@@ -195,18 +195,22 @@ let cleanReply = rawReply;
 if (actionMatch) {
   cleanReply = rawReply.replace(ACTION_REGEX, '').trim();
   try {
-    const actionData = JSON.parse(actionMatch[1].trim());
+    const rawAction = actionMatch[1].trim();
+    const firstBrace = rawAction.indexOf('{');
+    const lastBrace = rawAction.lastIndexOf('}');
+
+    if (firstBrace === -1 || lastBrace === -1) {
+      throw new Error('No valid JSON object found in action block');
+    }
+
+    const jsonSlice = rawAction.slice(firstBrace, lastBrace + 1);
+    const actionData = JSON.parse(jsonSlice);
+
     const result = await applyAction(actionData, req.user.id);
     if (result) actions.push(result);
   } catch (err) {
     console.error('Failed to parse/apply AI action:', err.message);
-    cleanReply += `\n\n⚠️ I tried to make this change but hit an error: ${err.message}. Nothing was created — please try asking again, maybe with fewer tasks at once.`;
-  }
-} else {
-  
-  const claimsAction = /\b(created|saved|added|moved|assigned|deleted)\b.{0,40}\b(task|tasks)\b/i.test(rawReply);
-  if (claimsAction) {
-    cleanReply = rawReply + `\n\n⚠️ Note: I may have described an action without actually performing it. Please check your board — if nothing changed, try rephrasing your request more specifically (e.g. name the exact project).`;
+    cleanReply += `\n\n(I tried to make a change but hit an error: ${err.message})`;
   }
 }
 
