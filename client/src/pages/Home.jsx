@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { LayoutGrid, MessageSquare, Bell, Paperclip, Zap, ArrowRight, Check } from 'lucide-react';
+import {
+  LayoutGrid, MessageSquare, Bell, Paperclip, Zap, ArrowRight, Check,
+  Users, History, Rewind, Sparkles, BarChart2, Shield,
+} from 'lucide-react';
 import Strands from '../components/effects/strands';
 import useAuthStore from '../store/authStore';
 
@@ -44,17 +47,31 @@ const S = {
   featList:    { listStyle: 'none', padding: 0, margin: '0 0 24px', flex: 1 },
   feat:        { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#a0cdd8', marginBottom: '10px' },
 
+
+highlightGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '20px' },
+highlightCard: { background: 'linear-gradient(135deg, rgba(0,200,180,0.06), rgba(0,158,142,0.02))', border: '1px solid rgba(0,200,180,0.2)', borderRadius: '16px', padding: '28px 24px' },
+highlightIcon: { width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(0,200,180,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px' },
+highlightTag:  { display: 'inline-block', fontSize: '10px', fontWeight: 700, color: '#00c8b4', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' },
+
   footer:      { borderTop: '1px solid #0e3347', padding: '32px 5%', textAlign: 'center' },
   footerText:  { fontSize: '12px', color: '#2a6070', margin: 0 },
 };
 
-const FEATURES = [
-  { icon: LayoutGrid,    title: 'Kanban boards',        text: 'Drag-and-drop task management across To Do, In Progress, and Done.' },
-  { icon: MessageSquare, title: 'Comments & activity',  text: 'Discuss tasks in context and track every change with a full audit trail.' },
-  { icon: Paperclip,     title: 'File attachments',     text: 'Upload images, PDFs, and docs directly onto any task.' },
-  { icon: Bell,          title: 'Real-time notifications', text: 'In-app and email alerts the moment something needs your attention.' },
+const HIGHLIGHTS = [
+  { icon: Users,    title: 'Live presence',    text: 'See exactly who\'s viewing the same task as you, in real time — like Figma, but for project management.' },
+  { icon: History,  title: 'Decision history', text: 'Moving a task backward or deleting it requires a reason, building a searchable record of every "why."' },
+  { icon: Rewind,   title: 'Ghost Mode',       text: 'Scrub through your project\'s entire history and watch it replay like a time-lapse.' },
+  { icon: Sparkles, title: 'AI Assistant',     text: 'A context-aware chat assistant that knows your projects and can create, move, or assign tasks for you.' },
 ];
 
+const FEATURES = [
+  { icon: LayoutGrid,    title: 'Kanban boards',           text: 'Drag-and-drop task management across To Do, In Progress, and Done.' },
+  { icon: MessageSquare, title: 'Comments & activity',     text: 'Discuss tasks in context and track every change with a full audit trail.' },
+  { icon: Paperclip,     title: 'File attachments',        text: 'Upload images, PDFs, docs, and more directly onto any task.' },
+  { icon: BarChart2,     title: 'Analytics dashboard',     text: 'Track completion rates, overdue tasks, and team workload at a glance.' },
+  { icon: Bell,          title: 'Real-time notifications', text: 'In-app and email alerts the moment something needs your attention.' },
+  { icon: Shield,        title: 'Role-based access',       text: 'Admin, member, and viewer roles keep the right people in control.' },
+];
 const PLANS = [
   { name: 'Free',     price: '$0',  period: 'forever',         features: ['1 project', '3 members', 'Kanban board'] },
   { name: 'Pro',      price: '$10', period: 'per user / month', features: ['20 projects', '20 members', 'Comments & files', 'Notifications'], popular: true },
@@ -122,21 +139,39 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={S.section}>
-        <div style={S.sectionHead}>
-          <p style={S.sectionTag}>Features</p>
-          <h2 style={S.sectionTitle}>Everything your team needs, nothing it doesn't</h2>
-        </div>
-        <div style={S.grid}>
-          {FEATURES.map(({ icon: Icon, title, text }) => (
-            <div key={title} style={S.card}>
-              <div style={S.cardIcon}><Icon size={20} color="#00c8b4" /></div>
-              <h3 style={S.cardTitle}>{title}</h3>
-              <p style={S.cardText}>{text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+   
+<section style={S.section}>
+  <div style={S.sectionHead}>
+    <p style={S.sectionTag}>Why CollabFlow</p>
+    <h2 style={S.sectionTitle}>Not just another Kanban board</h2>
+  </div>
+  <div style={S.highlightGrid}>
+    {HIGHLIGHTS.map(({ icon: Icon, title, text }) => (
+      <div key={title} style={S.highlightCard}>
+        <div style={S.highlightIcon}><Icon size={20} color="#00c8b4" /></div>
+        <h3 style={S.cardTitle}>{title}</h3>
+        <p style={S.cardText}>{text}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+
+<section style={S.section}>
+  <div style={S.sectionHead}>
+    <p style={S.sectionTag}>Features</p>
+    <h2 style={S.sectionTitle}>Everything your team needs</h2>
+  </div>
+  <div style={S.grid}>
+    {FEATURES.map(({ icon: Icon, title, text }) => (
+      <div key={title} style={S.card}>
+        <div style={S.cardIcon}><Icon size={20} color="#00c8b4" /></div>
+        <h3 style={S.cardTitle}>{title}</h3>
+        <p style={S.cardText}>{text}</p>
+      </div>
+    ))}
+  </div>
+</section>
 
       <section style={S.section}>
         <div style={S.sectionHead}>
