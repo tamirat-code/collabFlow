@@ -4,7 +4,7 @@ import { Check, Zap, Building2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { useBillingInfo, useBillingSuccessHandler, useCreateCheckout, usePortal } from '../hooks/useBilling';
 import useWorkspaceStore from '../store/workspaceStore';
 import { useWorkspaceRole } from '../hooks/useWorkspaceRole';
-import spinner from '../components/Spinner';
+import Spinner from '../components/Spinner';
 
 const PLANS = [
   {
