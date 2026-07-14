@@ -28,8 +28,11 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
+// Webhook route — completely isolated, raw body, no rate limiting, no other middleware
+import { handleWebhook } from './controllers/billingController.js';
+app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 
+// Everything else below applies to normal JSON routes only
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -41,7 +44,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.use(generalLimiter);
 
 app.use('/api/auth/login',               authLimiter);
@@ -51,16 +53,12 @@ app.use('/api/auth/reset-password',      sensitiveAuthLimiter);
 app.use('/api/auth/resend-verification', sensitiveAuthLimiter);
 app.use('/api/auth/verify-email',        sensitiveAuthLimiter);
 
-
-app.use('/api/billing', billingLimiter);
-
-
+app.use('/api/billing', billingLimiter); 
 app.use('/api/auth',          authRoutes);
 app.use('/api/workspaces',    workspaceRoutes);
-app.use('/api/billing',       billingRoutes);
+app.use('/api/billing',       billingRoutes); 
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai-assistant', aiAssistantRoutes);
-
 app.use((err, req, res, next) => {
   console.error(err.message);
   res.status(err.status || 500).json({ message: err.message || 'Server Error' });
