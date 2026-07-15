@@ -78,12 +78,17 @@ export const createPortalSession = async (req, res) => {
 };
 
 export const handleWebhook = async (req, res) => {
+   console.log('WEBHOOK DEBUG — body type:', typeof req.body, '| isBuffer:', Buffer.isBuffer(req.body));
+  console.log('WEBHOOK DEBUG — signature header present:', !!req.headers['stripe-signature']);
+  console.log('WEBHOOK DEBUG — content-type:', req.headers['content-type']);
+
   const sig = req.headers['stripe-signature'];
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
+    console.error('WEBHOOK DEBUG — constructEvent failed:', err.message);
     return res.status(400).json({ message: `Webhook error: ${err.message}` });
   }
 
